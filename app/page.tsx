@@ -55,7 +55,7 @@ export default function Home() {
     }
 
     // Create new WebSocket connection
-    wsRef.current = new WebSocket('ws://localhost:4000')
+    wsRef.current = new WebSocket('ws://localhost:5000')
     
     wsRef.current.onopen = () => {
       if (wsRef.current) {
