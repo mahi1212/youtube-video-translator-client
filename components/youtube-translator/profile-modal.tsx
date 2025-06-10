@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { encryptData } from "@/utils/encryption";
 
 interface ProfileModalProps {
   open: boolean;
@@ -36,15 +37,23 @@ export function ProfileModal({
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleApiKeyUpdate = async () => {
+    if (!apiKey.startsWith('sk-')) {
+      toast.error('Please enter a valid OpenAI API key starting with "sk-"');
+      return;
+    }
+
     setIsUpdating(true);
     try {
+      // Encrypt API key before sending
+      const encryptedApiKey = encryptData(apiKey);
+      
       const response = await fetch("http://localhost:5000/api/update-api-key", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ apiKey }),
+        body: JSON.stringify({ apiKey: encryptedApiKey }),
       });
 
       if (!response.ok) {
@@ -53,8 +62,9 @@ export function ProfileModal({
 
       onApiKeyUpdate(apiKey);
       toast.success("API key updated successfully");
+      onOpenChange(false);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error instanceof Error ? error.message : 'Failed to update API key');
     } finally {
       setIsUpdating(false);
     }

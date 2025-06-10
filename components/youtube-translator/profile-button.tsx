@@ -23,9 +23,10 @@ interface ProfileButtonProps {
 
 export function ProfileButton({ user, onLogout, onViewProfile }: ProfileButtonProps) {
   return (
-    <DropdownMenu>
+    <DropdownMenu >
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-12 w-12 rounded-full">
+        <Button variant="ghost"
+         className="cursor-pointer absolute right-10 top-10 h-12 w-12 rounded-full">
           <UserCircle className="h-8 w-8" />
         </Button>
       </DropdownMenuTrigger>

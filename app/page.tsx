@@ -11,6 +11,7 @@ import { ProfileButton } from "@/components/youtube-translator/profile-button";
 import { ProfileModal } from "@/components/youtube-translator/profile-modal";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { PremiumModal } from "@/components/youtube-translator/premium-modal";
 
 // Message types from server
 const MessageTypes = {
@@ -42,8 +43,9 @@ export default function Home() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  
+
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -98,7 +100,7 @@ export default function Home() {
       return;
     }
 
-    if (!openaiApiKey && !user) {
+    if (!user) {
       setShowLoginModal(true);
       return;
     }
@@ -159,8 +161,10 @@ export default function Home() {
         case MessageTypes.ERROR:
           toast.error(data.data.error);
           setIsProcessing(false);
-          if (data.data.limitReached) {
-            setShowProfileModal(true);
+          if (data.data.requiresUpgrade) {
+            setShowPremiumModal(true);
+          } else if (data.data.requiresAuth) {
+            setShowLoginModal(true);
           }
           break;
         default:
@@ -177,25 +181,22 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex justify-between items-center mb-8">
-          <Header />
-          {user ? (
-            <ProfileButton
-              user={user}
-              onLogout={handleLogout}
-              onViewProfile={() => setShowProfileModal(true)}
-            />
-          ) : (
-            <Button
-              variant="outline"
-              className="cursor-pointer absolute right-10 bottom-10"
-              onClick={() => setShowLoginModal(true)}
-            >
-              Login
-            </Button>
-          )}
-        </div>
-        
+        <Header />
+        {user ? (
+          <ProfileButton
+            user={user}
+            onLogout={handleLogout}
+            onViewProfile={() => setShowProfileModal(true)}
+          />
+        ) : (
+          <Button
+            variant="outline"
+            className="cursor-pointer absolute right-10 bottom-10"
+            onClick={() => setShowLoginModal(true)}
+          >
+            Login
+          </Button>
+        )}
         <InputForm
           videoUrl={videoUrl}
           setVideoUrl={setVideoUrl}
@@ -237,15 +238,26 @@ export default function Home() {
         />
 
         {user && (
-          <ProfileModal
-            open={showProfileModal}
-            onOpenChange={setShowProfileModal}
-            user={user}
-            onApiKeyUpdate={(apiKey) => {
-              setUser({ ...user, apiKey });
-              setOpenaiApiKey(apiKey);
-            }}
-          />
+          <>
+            <ProfileModal
+              open={showProfileModal}
+              onOpenChange={setShowProfileModal}
+              user={user}
+              onApiKeyUpdate={(apiKey) => {
+                setUser({ ...user, apiKey });
+                setOpenaiApiKey(apiKey);
+              }}
+            />
+
+            <PremiumModal
+              open={showPremiumModal}
+              onOpenChange={setShowPremiumModal}
+              onAddApiKey={() => {
+                setShowPremiumModal(false);
+                setShowProfileModal(true);
+              }}
+            />
+          </>
         )}
       </div>
     </div>
