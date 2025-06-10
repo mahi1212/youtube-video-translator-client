@@ -136,7 +136,7 @@ export default function Home() {
             </h1>
           </div>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Transform any YouTube video into text and translate it to your preferred language with AI-powered accuracy
+            Transform any YouTube video into text and translate it to your preferred language with AI-powered 99% accuracy
           </p>
         </div>
 
