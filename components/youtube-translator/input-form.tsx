@@ -27,6 +27,7 @@ interface InputFormProps {
   isProcessing: boolean;
   progress: number;
   onProcess: () => void;
+  showApiKeyInput?: boolean;
 }
 
 export const languages = [
@@ -50,6 +51,7 @@ export function InputForm({
   isProcessing,
   progress,
   onProcess,
+  showApiKeyInput = true
 }: InputFormProps) {
   return (
     <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur">
@@ -73,6 +75,7 @@ export function InputForm({
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
             className="h-12"
+            disabled={isProcessing}
           />
         </div>
 
@@ -98,19 +101,25 @@ export function InputForm({
             </Select>
           </div>
 
-          <div className="space-y-2 w-full">
-            <Label htmlFor="openai-api-key" className="text-sm font-medium">
-              OpenAI API Key
-            </Label>
-            <Input
-              id="openai-api-key"
-              placeholder="sk-..."
-              value={openaiApiKey}
-              onChange={(e) => setOpenaiApiKey(e.target.value)}
-              type="password"
-              className="w-full"
-            />
-          </div>
+          {showApiKeyInput && (
+            <div className="space-y-2 w-full">
+              <Label htmlFor="openai-api-key" className="text-sm font-medium">
+                OpenAI API Key
+              </Label>
+              <Input
+                id="openai-api-key"
+                placeholder="sk-..."
+                value={openaiApiKey}
+                onChange={(e) => setOpenaiApiKey(e.target.value)}
+                type="password"
+                className="w-full"
+                disabled={isProcessing}
+              />
+              <p className="text-sm text-muted-foreground">
+                Your API key is required for processing. It will not be stored on our servers.
+              </p>
+            </div>
+          )}
         </div>
         <div className={`flex items-center w-full justify-between flex-wrap ${videoUrl !== "" || targetLanguage !== "" || openaiApiKey !== "" ? "gap-4" : "gap-0"}`}>
           {/* clear button */}

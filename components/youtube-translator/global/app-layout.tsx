@@ -15,6 +15,9 @@ interface User {
   email: string
   subscription: string
   usageLimit: number
+  daily_usage: number
+  total_usage: number
+  is_api_key_available: boolean
   apiKey?: string
 }
 

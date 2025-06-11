@@ -22,6 +22,9 @@ interface ProfileModalProps {
     email: string;
     subscription: string;
     usageLimit: number;
+    daily_usage: number;
+    total_usage: number;
+    is_api_key_available: boolean;
     apiKey?: string;
   };
   onApiKeyUpdate: (apiKey: string) => void;
@@ -90,8 +93,12 @@ export function ProfileModal({
             </Badge>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Daily Usage Limit</span>
-            <Badge variant="outline">{user.usageLimit} conversions</Badge>
+            <span className="text-sm font-medium">Daily Usage</span>
+            <Badge variant="outline">{user.daily_usage} / {user.usageLimit} conversions</Badge>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">Total Usage</span>
+            <Badge variant="outline">{user.total_usage} conversions</Badge>
           </div>
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
@@ -101,32 +108,34 @@ export function ProfileModal({
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={user.email} disabled />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="api-key">OpenAI API Key</Label>
-            <div className="flex gap-2">
-              <Input
-                id="api-key"
-                type="password"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder="sk-..."
-              />
-              <Button
-                onClick={handleApiKeyUpdate}
-                disabled={isUpdating}
-                size="sm"
-              >
-                {isUpdating ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Save"
-                )}
-              </Button>
+          {!user.is_api_key_available && (
+            <div className="space-y-2">
+              <Label htmlFor="api-key">OpenAI API Key</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="api-key"
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="sk-..."
+                />
+                <Button
+                  onClick={handleApiKeyUpdate}
+                  disabled={isUpdating}
+                  size="sm"
+                >
+                  {isUpdating ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Save"
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Add your own API key to bypass daily limits
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Add your own API key to bypass daily limits
-            </p>
-          </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
