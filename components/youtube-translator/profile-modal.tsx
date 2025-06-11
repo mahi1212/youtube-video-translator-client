@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle } from "lucide-react";
 import { encryptData } from "@/utils/encryption";
 
 interface ProfileModalProps {
@@ -108,34 +108,53 @@ export function ProfileModal({
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" value={user.email} disabled />
           </div>
-          {!user.is_api_key_available && (
-            <div className="space-y-2">
-              <Label htmlFor="api-key">OpenAI API Key</Label>
-              <div className="flex gap-2">
-                <Input
-                  id="api-key"
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="sk-..."
-                />
-                <Button
-                  onClick={handleApiKeyUpdate}
-                  disabled={isUpdating}
-                  size="sm"
-                >
-                  {isUpdating ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "Save"
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Add your own API key to bypass daily limits
+          
+          {user.is_api_key_available && (
+            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <p className="text-sm text-green-800">
+                You have already added an OpenAI API key. You can update it below if needed.
               </p>
             </div>
           )}
+          
+          <div className="space-y-2">
+            <Label htmlFor="api-key">
+              OpenAI API Key
+              {user.is_api_key_available && (
+                <Badge variant="outline" className="ml-2">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Active
+                </Badge>
+              )}
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="api-key"
+                type="password"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="sk-..."
+              />
+              <Button
+                onClick={handleApiKeyUpdate}
+                disabled={isUpdating}
+                size="sm"
+              >
+                {isUpdating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  user.is_api_key_available ? "Update" : "Save"
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {user.is_api_key_available 
+                ? "Your API key allows unlimited usage. Update only if you want to change it."
+                : "Add your own API key to bypass daily limits"
+              }
+            </p>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

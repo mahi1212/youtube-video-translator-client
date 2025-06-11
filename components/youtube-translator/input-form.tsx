@@ -1,4 +1,4 @@
-import { Play, Loader2, Languages, Trash2 } from "lucide-react";
+import { Play, Loader2, Languages, Trash2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,6 +28,7 @@ interface InputFormProps {
   progress: number;
   onProcess: () => void;
   showApiKeyInput?: boolean;
+  hasStoredApiKey?: boolean;
 }
 
 export const languages = [
@@ -51,7 +52,8 @@ export function InputForm({
   isProcessing,
   progress,
   onProcess,
-  showApiKeyInput = true
+  showApiKeyInput = true,
+  hasStoredApiKey = false
 }: InputFormProps) {
   return (
     <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur">
@@ -103,21 +105,32 @@ export function InputForm({
 
           {showApiKeyInput && (
             <div className="space-y-2 w-full">
-              <Label htmlFor="openai-api-key" className="text-sm font-medium">
+              <Label htmlFor="openai-api-key" className="text-sm font-medium flex items-center gap-2">
                 OpenAI API Key
+                {hasStoredApiKey && (
+                  <div className="flex items-center gap-1 text-green-600">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-xs">Already provided</span>
+                  </div>
+                )}
               </Label>
-              <Input
-                id="openai-api-key"
-                placeholder="sk-..."
-                value={openaiApiKey}
-                onChange={(e) => setOpenaiApiKey(e.target.value)}
-                type="password"
-                className="w-full"
-                disabled={isProcessing}
-              />
-              <p className="text-sm text-muted-foreground">
-                Your API key is required for processing. It will not be stored on our servers.
-              </p>
+              <div className="relative">
+                <Input
+                  id="openai-api-key"
+                  placeholder={hasStoredApiKey ? "Using stored API key..." : "API Key required to process anonymously. sk-..."}
+                  value={openaiApiKey}
+                  onChange={(e) => setOpenaiApiKey(e.target.value)}
+                  type="password"
+                  className="w-full"
+                  disabled={isProcessing}
+                />
+                {hasStoredApiKey && !openaiApiKey && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    <CheckCircle className="w-4 h-4 text-green-600" />
+                  </div>
+                )}
+              </div>
+              
             </div>
           )}
         </div>

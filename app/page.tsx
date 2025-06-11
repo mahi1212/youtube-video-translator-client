@@ -43,14 +43,14 @@ export default function Home() {
       return
     }
 
-    // Check if user is logged in and has API key
+    // Check if user is logged in
     if (!user) {
       toast.error("Please log in to continue.")
       setShowLoginModal(true)
       return
     }
 
-    // If user is logged in but doesn't have API key and hasn't provided one
+    // If user doesn't have stored API key and hasn't provided one in the form
     if (!user.is_api_key_available && !openaiApiKey) {
       toast.error("Please provide your OpenAI API key.")
       return
@@ -148,7 +148,8 @@ export default function Home() {
         isProcessing={isProcessing}
         progress={progress}
         onProcess={handleProcess}
-        showApiKeyInput={!user?.is_api_key_available}
+        showApiKeyInput={true}
+        hasStoredApiKey={user?.is_api_key_available || false}
       />
 
       <Results
