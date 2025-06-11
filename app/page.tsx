@@ -12,6 +12,7 @@ import { ProfileModal } from "@/components/youtube-translator/profile-modal";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { PremiumModal } from "@/components/youtube-translator/premium-modal";
+import { useRouter } from "next/navigation";
 
 // Message types from server
 const MessageTypes = {
@@ -47,6 +48,7 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // Check for existing token and fetch user data
@@ -183,11 +185,20 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Header />
         {user ? (
-          <ProfileButton
-            user={user}
-            onLogout={handleLogout}
-            onViewProfile={() => setShowProfileModal(true)}
-          />
+          <div className="absolute right-10 bottom-10 flex gap-2">
+            <Button
+              variant="outline"
+              className="cursor-pointer"
+              onClick={() => router.push("/history")}
+            >
+              History
+            </Button>
+            <ProfileButton
+              user={user}
+              onLogout={handleLogout}
+              onViewProfile={() => setShowProfileModal(true)}
+            />
+          </div>
         ) : (
           <Button
             variant="outline"
