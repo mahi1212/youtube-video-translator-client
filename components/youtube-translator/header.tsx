@@ -5,9 +5,9 @@ export function Header() {
     <div className="text-center mb-8">
       <div className="flex items-center justify-center gap-3 mb-4">
         <div className="p-3 bg-red-500 rounded-full">
-          <Youtube className="w-8 h-8 text-white" />
+          <Youtube className="w-6 md:w-8 h-6 md:h-8 text-white" />
         </div>
-        <h1 className="text-4xl font-bold text-black ">
+        <h1 className="text-xl md:text-4xl font-bold text-black ">
           Youtube Transcriber & Translator 
         </h1>
       </div>

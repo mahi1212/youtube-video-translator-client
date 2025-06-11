@@ -7,6 +7,8 @@ import { RegisterModal } from "@/components/youtube-translator/auth/register-mod
 import { ProfileModal } from "@/components/youtube-translator/profile-modal"
 import { PremiumModal } from "@/components/youtube-translator/premium-modal"
 import { UsageDetailsModal } from "@/components/history/usage-details-modal"
+import { Button } from "@/components/ui/button"
+import { Menu, X } from "lucide-react"
 import { toast } from "sonner"
 
 interface User {
@@ -48,6 +50,8 @@ interface AppContextType {
   setShowProfileModal: (show: boolean) => void
   showPremiumModal: boolean
   setShowPremiumModal: (show: boolean) => void
+  isSidebarCollapsed: boolean
+  setIsSidebarCollapsed: (collapsed: boolean) => void
   fetchUserProfile: (token: string) => Promise<void>
   fetchHistory: (token: string) => Promise<void>
 }
@@ -76,6 +80,21 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [showPremiumModal, setShowPremiumModal] = useState(false)
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<UsageHistoryItem | null>(null)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+
+  // Load collapsed state from localStorage on mount
+  useEffect(() => {
+    const savedCollapsedState = localStorage.getItem('sidebarCollapsed')
+    if (savedCollapsedState !== null) {
+      setIsSidebarCollapsed(JSON.parse(savedCollapsedState))
+    }
+  }, [])
+
+  // Save collapsed state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(isSidebarCollapsed))
+  }, [isSidebarCollapsed])
 
   useEffect(() => {
     const token = localStorage.getItem("token")
@@ -83,6 +102,22 @@ export function AppLayout({ children }: AppLayoutProps) {
       fetchUserProfile(token)
       fetchHistory(token)
     }
+  }, [])
+
+  // Close mobile sidebar when clicking outside or on route change
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileSidebarOpen(false)
+      } else {
+        // On mobile, always uncollapse sidebar for better UX
+        setIsSidebarCollapsed(false)
+      }
+    }
+
+    handleResize() // Call once on mount
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   const fetchUserProfile = async (token: string) => {
@@ -134,6 +169,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       setOpenaiApiKey(data.user.apiKey)
     }
     fetchHistory(data.token)
+    setIsMobileSidebarOpen(false) // Close mobile sidebar after login
   }
 
   const handleLogout = () => {
@@ -141,7 +177,16 @@ export function AppLayout({ children }: AppLayoutProps) {
     setUser(null)
     setOpenaiApiKey("")
     setUsageHistory([])
+    setIsMobileSidebarOpen(false) // Close mobile sidebar on logout
     toast.success("Logged out successfully")
+  }
+
+  const toggleMobileSidebar = () => {
+    setIsMobileSidebarOpen(!isMobileSidebarOpen)
+  }
+
+  const toggleSidebarCollapse = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed)
   }
 
   const contextValue: AppContextType = {
@@ -159,6 +204,8 @@ export function AppLayout({ children }: AppLayoutProps) {
     setShowProfileModal,
     showPremiumModal,
     setShowPremiumModal,
+    isSidebarCollapsed,
+    setIsSidebarCollapsed,
     fetchUserProfile,
     fetchHistory,
   }
@@ -166,22 +213,64 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <AppContext.Provider value={contextValue}>
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="flex h-screen">
-          <Sidebar
-            user={user}
-            usageHistory={usageHistory}
-            paymentHistory={[]}
-            onLoginClick={() => setShowLoginModal(true)}
-            onProfileClick={() => setShowProfileModal(true)}
-            onLogout={handleLogout}
-            onHistoryItemClick={(item) => {
-              setSelectedHistoryItem(item)
-              setShowHistoryModal(true)
-            }}
-          />
+        <div className="flex h-screen relative">
+          {/* Mobile Menu Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="fixed top-4 left-4 z-50 lg:hidden bg-white/90 backdrop-blur-sm border-gray-200/50 shadow-lg"
+            onClick={toggleMobileSidebar}
+          >
+            {isMobileSidebarOpen ? (
+              <X className="h-4 w-4" />
+            ) : (
+              <Menu className="h-4 w-4" />
+            )}
+          </Button>
+
+          {/* Mobile Sidebar Overlay */}
+          {isMobileSidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              onClick={() => setIsMobileSidebarOpen(false)}
+            />
+          )}
+
+          {/* Sidebar */}
+          <div className={`
+            fixed lg:relative 
+            inset-y-0 left-0 z-40
+            transform transition-all duration-300 ease-in-out
+            ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            ${isSidebarCollapsed ? 'lg:w-16' : 'lg:w-80'}
+          `}>
+            <Sidebar
+              user={user}
+              usageHistory={usageHistory}
+              paymentHistory={[]}
+              isCollapsed={isSidebarCollapsed}
+              onCollapseToggle={toggleSidebarCollapse}
+              onLoginClick={() => {
+                setShowLoginModal(true)
+                setIsMobileSidebarOpen(false)
+              }}
+              onProfileClick={() => {
+                setShowProfileModal(true)
+                setIsMobileSidebarOpen(false)
+              }}
+              onLogout={handleLogout}
+              onHistoryItemClick={(item) => {
+                setSelectedHistoryItem(item)
+                setShowHistoryModal(true)
+                setIsMobileSidebarOpen(false)
+              }}
+            />
+          </div>
 
           {/* Main Content */}
-          <div className="flex-1 overflow-auto flex justify-center items-start">
+          <div className={`
+            flex-1 overflow-auto flex justify-center items-center transition-all duration-300 ease-in-out pt-[800px] lg:pt-0
+          `}>
             {children}
           </div>
         </div>
