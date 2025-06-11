@@ -101,11 +101,11 @@ export function Sidebar({
   }
 
   return (
-    <div className="w-80 bg-white/80 backdrop-blur-xl border-r border-gray-200/50 flex flex-col shadow-xl">
+    <div className="w-80 bg-white/80 backdrop-blur-xl border-r border-gray-200/50 flex flex-col h-screen shadow-xl">
       {user ? (
         <>
           {/* User Profile Section */}
-          <div className="p-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+          <div className="p-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white flex-shrink-0">
             <div className="flex items-center gap-4 mb-4">
               <Avatar className="h-12 w-12 ring-2 ring-white/20">
                 <AvatarImage src="/placeholder.svg" />
@@ -130,7 +130,7 @@ export function Sidebar({
             </div>
 
             <div className="flex gap-2">
-            <Button
+              <Button
                 variant="secondary"
                 size="sm"
                 className="bg-white/20 hover:bg-white/30 text-white border-white/20"
@@ -148,13 +148,12 @@ export function Sidebar({
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
-              
             </div>
           </div>
 
           {/* Tabs Section */}
-          <Tabs defaultValue="activity" className="flex-1 flex flex-col">
-            <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-200/50">
+          <Tabs defaultValue="activity" className="flex-1 flex flex-col min-h-0">
+            <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-200/50 flex-shrink-0">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="activity" className="flex items-center gap-2">
                   <History className="h-4 w-4" />
@@ -167,9 +166,9 @@ export function Sidebar({
               </TabsList>
             </div>
 
-            <TabsContent value="activity" className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full px-3 py-2">
-                <div className="space-y-2">
+            <TabsContent value="activity" className="flex-1 min-h-0">
+              <ScrollArea className="h-full">
+                <div className="space-y-2 px-3 py-2">
                   {usageHistory.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                       <MessageSquare className="h-12 w-12 text-gray-300 mb-4" />
@@ -232,9 +231,9 @@ export function Sidebar({
               </ScrollArea>
             </TabsContent>
 
-            <TabsContent value="payments" className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full px-3 py-2">
-                <div className="space-y-2">
+            <TabsContent value="payments" className="flex-1 min-h-0">
+              <ScrollArea className="h-full">
+                <div className="space-y-2 px-3 py-2">
                   {isLoadingPayments ? (
                     // Skeleton loader for payments
                     Array.from({ length: 3 }).map((_, i) => (
@@ -279,7 +278,7 @@ export function Sidebar({
                               {payment.amount} {payment.currency}
                             </span>
                           </div>
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500">    
                             {format(new Date(payment.createdAt), "MMM d, yyyy")}
                           </span>
                         </div>
