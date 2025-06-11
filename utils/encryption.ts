@@ -9,7 +9,7 @@ export const encryptData = (text: string): string => {
     // Add a prefix to identify frontend encryption
     const encrypted = AES.encrypt(text, ENCRYPTION_KEY).toString();
     return `FE:${encrypted}`;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Encryption error:', error);
     return '';
   }
@@ -23,7 +23,7 @@ export const decryptData = (encryptedText: string): string => {
       
     const bytes = AES.decrypt(actualText, ENCRYPTION_KEY);
     return bytes.toString(enc.Utf8);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Decryption error:', error);
     return '';
   }

@@ -66,7 +66,7 @@ export function ProfileModal({
       onApiKeyUpdate(apiKey);
       toast.success("API key updated successfully");
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error instanceof Error ? error.message : 'Failed to update API key');
     } finally {
       setIsUpdating(false);

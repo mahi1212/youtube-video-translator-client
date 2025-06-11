@@ -56,7 +56,7 @@ export function RegisterModal({
       onSuccess(data);
       onOpenChange(false);
       toast.success("Registered successfully!");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message);
     } finally {
       setIsLoading(false);

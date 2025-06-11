@@ -55,7 +55,7 @@ export function LoginModal({
       onSuccess(data);
       onOpenChange(false);
       toast.success("Logged in successfully!");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message);
     } finally {
       setIsLoading(false);

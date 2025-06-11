@@ -39,7 +39,7 @@ export function UsageDetailsModal({ open, onOpenChange, item }: UsageDetailsModa
         setTimeout(() => setCopiedResult(false), 2000)
       }
       toast.success("Copied to clipboard!")
-    } catch (error) {
+    } catch (error: any) {
       console.error("Copy failed:", error)
       toast.error("Failed to copy text")
     }
