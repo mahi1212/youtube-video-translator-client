@@ -43,7 +43,8 @@ export default function Home() {
       return
     }
 
-    if (!user) {
+    if (!user && !openaiApiKey) {
+      toast.error("Please either log in or provide your OpenAI API key.")
       setShowLoginModal(true)
       return
     }
@@ -68,6 +69,7 @@ export default function Home() {
             videoUrl,
             targetLang: targetLanguage,
             token: localStorage.getItem("token"),
+            openaiApiKey: openaiApiKey || null
           }),
         )
       }
