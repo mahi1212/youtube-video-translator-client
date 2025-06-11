@@ -34,8 +34,22 @@ export default function Home() {
   const [transcribedText, setTranscribedText] = useState("")
   const [translatedText, setTranslatedText] = useState("")
   const [progress, setProgress] = useState(0)
+  const [currentStage, setCurrentStage] = useState("")
 
   const wsRef = useRef<WebSocket | null>(null)
+
+  const calculateOverallProgress = (stage: string, stageProgress: number) => {
+    const stageWeights = {
+      download: { base: 0, weight: 20 },
+      transcription: { base: 20, weight: 30 },
+      translation: { base: 50, weight: 50 }
+    }
+    
+    const stageInfo = stageWeights[stage as keyof typeof stageWeights]
+    if (!stageInfo) return 0
+    
+    return Math.round(stageInfo.base + (stageProgress * stageInfo.weight) / 100)
+  }
 
   const handleProcess = async () => {
     if (!videoUrl || !targetLanguage) {
@@ -60,6 +74,7 @@ export default function Home() {
     setTranscribedText("")
     setTranslatedText("")
     setProgress(0)
+    setCurrentStage("Initializing...")
 
     // Close existing WebSocket connection if any
     if (wsRef.current) {
@@ -87,18 +102,26 @@ export default function Home() {
 
       switch (data.type) {
         case MessageTypes.PROCESSING_STARTED:
-          toast.info(data.data.message)
+          setCurrentStage("Starting...")
+          setProgress(0)
           break
         case MessageTypes.DOWNLOAD_PROGRESS:
-          toast.info(data.data.message)
+          setCurrentStage("Downloading")
+          const downloadProgress = data.data.progress || 0
+          setProgress(calculateOverallProgress("download", downloadProgress))
           break
         case MessageTypes.TRANSCRIPTION_PROGRESS:
+          setCurrentStage("Transcribing")
+          const transcriptionProgress = data.data.progress || 0
+          setProgress(calculateOverallProgress("transcription", transcriptionProgress))
           if (data.data.transcription) {
             setTranscribedText(data.data.transcription)
           }
           break
         case MessageTypes.TRANSLATION_PROGRESS:
-          setProgress(data.data.progress || 0)
+          setCurrentStage("Translating")
+          const translationProgress = data.data.progress || 0
+          setProgress(calculateOverallProgress("translation", translationProgress))
           if (data.data.currentTranslation) {
             setTranslatedText(data.data.currentTranslation)
           }
@@ -108,6 +131,7 @@ export default function Home() {
           setTranslatedText(data.data.translation)
           setIsProcessing(false)
           setProgress(100)
+          setCurrentStage("Complete")
           toast.success("Processing complete!")
           // Refresh history after successful processing
           const token = localStorage.getItem("token")
@@ -118,6 +142,8 @@ export default function Home() {
         case MessageTypes.ERROR:
           toast.error(data.data.error)
           setIsProcessing(false)
+          setProgress(0)
+          setCurrentStage("")
           if (data.data.requiresUpgrade) {
             setShowPremiumModal(true)
           } else if (data.data.requiresAuth) {
@@ -132,6 +158,8 @@ export default function Home() {
     wsRef.current.onerror = () => {
       toast.error("WebSocket connection error")
       setIsProcessing(false)
+      setProgress(0)
+      setCurrentStage("")
     }
   }
 
@@ -147,6 +175,7 @@ export default function Home() {
         setOpenaiApiKey={setOpenaiApiKey}
         isProcessing={isProcessing}
         progress={progress}
+        currentStage={currentStage}
         onProcess={handleProcess}
         showApiKeyInput={true}
         hasStoredApiKey={user?.is_api_key_available || false}

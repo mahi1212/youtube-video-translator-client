@@ -26,6 +26,7 @@ interface InputFormProps {
   setOpenaiApiKey: (key: string) => void;
   isProcessing: boolean;
   progress: number;
+  currentStage?: string;
   onProcess: () => void;
   showApiKeyInput?: boolean;
   hasStoredApiKey?: boolean;
@@ -51,6 +52,7 @@ export function InputForm({
   setOpenaiApiKey,
   isProcessing,
   progress,
+  currentStage = "",
   onProcess,
   showApiKeyInput = true,
   hasStoredApiKey = false
@@ -165,7 +167,7 @@ export function InputForm({
             {isProcessing ? (
               <>
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Processing Video... {progress}%
+                {currentStage} {progress}%
               </>
             ) : (
               <>
