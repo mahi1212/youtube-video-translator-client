@@ -67,7 +67,7 @@ export default function ContentCreator() {
             </TabsTrigger>
           </TabsList>
 
-          <div className="mt-8">
+          <div className="mt-4">
             <TabsContent 
               value="translate" 
               className="animate-in fade-in-50 slide-in-from-bottom-4 duration-500"

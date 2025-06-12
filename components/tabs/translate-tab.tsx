@@ -50,6 +50,8 @@ export function TranslateTab() {
   const [initialLanguage, setInitialLanguage] = useState("");
   const [progress, setProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState("");
+  const [audioData, setAudioData] = useState("");
+  const [targetAudioData, setTargetAudioData] = useState("");
 
   // Audio generation options (upcoming features)
   const [generateTargetAudio, setGenerateTargetAudio] = useState(false);
@@ -89,6 +91,8 @@ export function TranslateTab() {
     setInitialLanguage("");
     setProgress(0);
     setCurrentStage("");
+    setAudioData("");
+    setTargetAudioData("");
 
     // Reset audio options
     setGenerateTargetAudio(false);
@@ -145,6 +149,8 @@ export function TranslateTab() {
             targetLang: targetLanguage,
             token: localStorage.getItem("token"),
             openaiApiKey: openaiApiKey || null,
+            generateTargetAudio,
+            selectedVoice
           })
         );
       }
@@ -187,6 +193,8 @@ export function TranslateTab() {
           setTranscribedText(data.data.transcription);
           setTranslatedText(data.data.translation);
           setInitialLanguage(data.data.initialLanguage || "Auto-detected");
+          setAudioData(data.data.initialAudioData || "");
+          setTargetAudioData(data.data.targetAudioData || "");
           setIsProcessing(false);
           setProgress(100);
           setCurrentStage("Complete");
@@ -435,6 +443,8 @@ export function TranslateTab() {
             translatedText={translatedText}
             targetLanguage={targetLanguage}
             initialLanguage={initialLanguage}
+            initialAudioData={audioData}
+            targetAudioData={targetAudioData}
           />
         </div>
       )}

@@ -61,6 +61,8 @@ export interface UsageHistoryItem {
   targetLanguage?: string;
   initialLanguage?: string;
   tokensUsed: number;
+  initialAudioData?: string;
+  targetAudioData?: string;
   createdAt: string;
 }
 
