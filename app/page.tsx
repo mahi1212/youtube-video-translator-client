@@ -17,7 +17,7 @@ export default function ContentCreator() {
           <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-4 h-16 bg-white/100 backdrop-blur-xl border border-white/20 rounded-xl">
             <TabsTrigger
               value="translate"
-              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out
+              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out -mt-1
                          data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-400 data-[state=active]:to-blue-600 
                          data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105
                          bg-white cursor-pointer 
@@ -30,7 +30,7 @@ export default function ContentCreator() {
             
             <TabsTrigger
               value="blog"
-              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out
+              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out -mt-1
                          data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-400 data-[state=active]:to-blue-600 
                          data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105
                          bg-white cursor-pointer 
@@ -43,7 +43,7 @@ export default function ContentCreator() {
             
             <TabsTrigger
               value="social"
-              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out
+              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out -mt-1
                          data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-400 data-[state=active]:to-blue-600 
                          data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105
                          bg-white cursor-pointer 
@@ -56,7 +56,7 @@ export default function ContentCreator() {
             
             <TabsTrigger
               value="video"
-              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out
+              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out -mt-1
                          data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-400 data-[state=active]:to-blue-600 
                          data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105
                          bg-white cursor-pointer 

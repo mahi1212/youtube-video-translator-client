@@ -150,7 +150,7 @@ export function TranslateTab() {
             token: localStorage.getItem("token"),
             openaiApiKey: openaiApiKey || null,
             generateTargetAudio,
-            selectedVoice
+            selectedVoice,
           })
         );
       }
@@ -229,191 +229,201 @@ export function TranslateTab() {
 
   return (
     <div className="space-y-6">
-      <InputForm
-        videoUrl={videoUrl}
-        setVideoUrl={setVideoUrl}
-        targetLanguage={targetLanguage}
-        setTargetLanguage={setTargetLanguage}
-        openaiApiKey={openaiApiKey}
-        setOpenaiApiKey={setOpenaiApiKey}
-        isProcessing={isProcessing}
-        progress={progress}
-        currentStage={currentStage}
-        onProcess={handleProcess}
-        showApiKeyInput={true}
-        hasStoredApiKey={user?.is_api_key_available || false}
-      />
+      <div className="grid grid-cols-12 gap-4">
+        <div className="col-span-6 h-full">
+          <InputForm
+            videoUrl={videoUrl}
+            setVideoUrl={setVideoUrl}
+            targetLanguage={targetLanguage}
+            setTargetLanguage={setTargetLanguage}
+            openaiApiKey={openaiApiKey}
+            setOpenaiApiKey={setOpenaiApiKey}
+            isProcessing={isProcessing}
+            progress={progress}
+            currentStage={currentStage}
+            onProcess={handleProcess}
+            showApiKeyInput={true}
+            hasStoredApiKey={user?.is_api_key_available || false}
+          />
+        </div>
+        <div className="col-span-6 h-full">
+          {/* Audio Generation Options */}
+          <Card className="bg-white/80 backdrop-blur border-0 shadow-lg h-full">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Volume2 className="w-5 h-5 text-purple-500" />
+                Audio Generation Options
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 h-full flex flex-col justify-around">
+              {/* Generate Target Language Audio */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label
+                      htmlFor="generate-audio"
+                      className="text-base font-medium"
+                    >
+                      Generate Audio in Target Language
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      Create AI-generated speech for the translated text
+                    </p>
+                  </div>
+                  <Switch
+                    id="generate-audio"
+                    checked={generateTargetAudio}
+                    onCheckedChange={setGenerateTargetAudio}
+                  />
+                </div>
 
-      {/* Audio Generation Options */}
-      <Card className="bg-white/80 backdrop-blur border-0 shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Volume2 className="w-5 h-5 text-purple-500" />
-            Audio Generation Options
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Generate Target Language Audio */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label
-                  htmlFor="generate-audio"
-                  className="text-base font-medium"
-                >
-                  Generate Audio in Target Language
-                </Label>
-                <p className="text-sm text-gray-600">
-                  Create AI-generated speech for the translated text
-                </p>
+                {generateTargetAudio && (
+                  <div className="flex items-center justify-between gap-2 p-4 bg-gray-50 rounded-none border-l-4 border-purple-400 ">
+                    <p className="text-sm font-medium text-gray-700">
+                      Choose a voice style
+                    </p>
+                    <div>
+                      <Select
+                        value={selectedVoice}
+                        onValueChange={setSelectedVoice}
+                      >
+                        <SelectTrigger className="mt-2 bg-white">
+                          <SelectValue placeholder="Choose a voice style" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="natural-male">
+                            Natural Male Voice
+                          </SelectItem>
+                          <SelectItem value="natural-female">
+                            Natural Female Voice
+                          </SelectItem>
+                          <SelectItem value="professional-male">
+                            Professional Male
+                          </SelectItem>
+                          <SelectItem value="professional-female">
+                            Professional Female
+                          </SelectItem>
+                          <SelectItem value="casual-male">
+                            Casual Male
+                          </SelectItem>
+                          <SelectItem value="casual-female">
+                            Casual Female
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
               </div>
-              <Switch
-                id="generate-audio"
-                checked={generateTargetAudio}
-                onCheckedChange={setGenerateTargetAudio}
-              />
-            </div>
 
-            {generateTargetAudio && (
-              <div className="flex items-center justify-between gap-2 p-4 bg-gray-50 rounded-none border-l-4 border-purple-400 ">
-                <p className="text-sm font-medium text-gray-700">
-                  Choose a voice style
-                </p>
-                <div >
-                  <Select
-                    value={selectedVoice}
-                    onValueChange={setSelectedVoice}
+              {/* Keep Original Audio */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="keep-original"
+                    className="text-base font-medium"
                   >
-                    <SelectTrigger className="mt-2 bg-white">
-                      <SelectValue placeholder="Choose a voice style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="natural-male">
-                        Natural Male Voice
-                      </SelectItem>
-                      <SelectItem value="natural-female">
-                        Natural Female Voice
-                      </SelectItem>
-                      <SelectItem value="professional-male">
-                        Professional Male
-                      </SelectItem>
-                      <SelectItem value="professional-female">
-                        Professional Female
-                      </SelectItem>
-                      <SelectItem value="casual-male">Casual Male</SelectItem>
-                      <SelectItem value="casual-female">
-                        Casual Female
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                    Preserve Original Audio Track
+                  </Label>
+                  <p className="text-sm text-gray-600">
+                    Keep the original audio alongside the translated version
+                  </p>
                 </div>
+                <Switch
+                  id="keep-original"
+                  checked={keepOriginalAudio}
+                  onCheckedChange={setKeepOriginalAudio}
+                />
               </div>
-            )}
-          </div>
 
-          {/* Keep Original Audio */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="keep-original" className="text-base font-medium">
-                Preserve Original Audio Track
-              </Label>
-              <p className="text-sm text-gray-600">
-                Keep the original audio alongside the translated version
-              </p>
-            </div>
-            <Switch
-              id="keep-original"
-              checked={keepOriginalAudio}
-              onCheckedChange={setKeepOriginalAudio}
-            />
-          </div>
-
-          {/* Voice Cloning - Upcoming Feature */}
-          <div className="space-y-4 relative">
-            <div className="absolute top-0 right-0 bg-gradient-to-l from-purple-500 to-blue-500 text-white px-2 py-1 text-xs font-medium rounded-bl-lg rounded-tr-lg">
-              <Clock className="w-3 h-3 inline mr-1" />
-              Coming Soon
-            </div>
-            <div className="flex items-center justify-between opacity-60">
-              <div className="space-y-1">
-                <Label
-                  htmlFor="voice-clone"
-                  className="text-base font-medium flex items-center gap-2"
-                >
-                  <Mic className="w-4 h-4" />
-                  Voice Cloning
-                  <Badge variant="outline" className="text-xs">
-                    Premium
-                  </Badge>
-                </Label>
-                <p className="text-sm text-gray-600">
-                  Clone the original speaker&apos;s voice for the translated
-                  audio
-                </p>
-              </div>
-              <Switch
-                id="voice-clone"
-                checked={enableVoiceClone}
-                onCheckedChange={(checked) => {
-                  setEnableVoiceClone(checked);
-                  if (checked) handleUpcomingFeature("Voice Cloning");
-                }}
-                disabled
-              />
-            </div>
-
-            {enableVoiceClone && (
-              <div className="ml-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 opacity-60">
-                <div className="flex items-center gap-2 mb-2">
-                  <Sparkles className="w-4 h-4 text-purple-500" />
-                  <span className="text-sm font-medium text-purple-700">
-                    Advanced Voice Cloning
-                  </span>
+              {/* Voice Cloning - Upcoming Feature */}
+              <div className="space-y-4 relative">
+                <div className="absolute top-0 right-0 bg-gradient-to-l from-purple-500 to-blue-500 text-white px-2 py-1 text-xs font-medium rounded-bl-lg rounded-tr-lg">
+                  <Clock className="w-3 h-3 inline mr-1" />
+                  Coming Soon
                 </div>
-                <p className="text-xs text-gray-600 mb-3">
-                  Our AI will analyze the original speaker&apos;s voice
-                  characteristics and apply them to the translated audio.
-                </p>
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span>Voice Tone Matching</span>
+                <div className="flex items-center justify-between opacity-60">
+                  <div className="space-y-1">
+                    <Label
+                      htmlFor="voice-clone"
+                      className="text-base font-medium flex items-center gap-2"
+                    >
+                      <Mic className="w-4 h-4" />
+                      Voice Cloning
+                      <Badge variant="outline" className="text-xs">
+                        Premium
+                      </Badge>
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      Clone the original speaker&apos;s voice for the translated
+                      audio
+                    </p>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span>Accent Preservation</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span>Emotion Transfer</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                    <span>Speaking Pace</span>
-                  </div>
+                  <Switch
+                    id="voice-clone"
+                    checked={enableVoiceClone}
+                    onCheckedChange={(checked) => {
+                      setEnableVoiceClone(checked);
+                      if (checked) handleUpcomingFeature("Voice Cloning");
+                    }}
+                    disabled
+                  />
                 </div>
-              </div>
-            )}
-          </div>
 
-          {/* Voice Cloning Preview */}
-          {enableVoiceClone && (
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-blue-700">
-                  Voice Cloning Coming Soon
-                </span>
+                {enableVoiceClone && (
+                  <div className="ml-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 opacity-60">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Sparkles className="w-4 h-4 text-purple-500" />
+                      <span className="text-sm font-medium text-purple-700">
+                        Advanced Voice Cloning
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-600 mb-3">
+                      Our AI will analyze the original speaker&apos;s voice
+                      characteristics and apply them to the translated audio.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span>Voice Tone Matching</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span>Accent Preservation</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span>Emotion Transfer</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                        <span>Speaking Pace</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-gray-600">
-                Advanced voice cloning technology is currently in development.
-                Join our waitlist to be notified when it&apos;s available!
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
+              {/* Voice Cloning Preview */}
+              {enableVoiceClone && (
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-blue-500" />
+                    <span className="text-sm font-medium text-blue-700">
+                      Voice Cloning Coming Soon
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600">
+                    Advanced voice cloning technology is currently in
+                    development. Join our waitlist to be notified when it&apos;s
+                    available!
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
       {(transcribedText || translatedText) && (
         <div className="space-y-4">
           {/* Results Header with Reset Button */}

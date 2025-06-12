@@ -58,7 +58,7 @@ export function InputForm({
   hasStoredApiKey = false
 }: InputFormProps) {
   return (
-    <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur">
+    <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur h-full">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2">
           <Play className="w-5 h-5 text-red-500" />
