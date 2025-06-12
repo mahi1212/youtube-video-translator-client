@@ -3,6 +3,8 @@
 import { useState, useRef } from "react"
 import { InputForm } from "@/components/youtube-translator/input-form"
 import { Results } from "@/components/youtube-translator/results"
+import { Button } from "@/components/ui/button"
+import { RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 import { useAppContext } from "@/components/youtube-translator/global/app-layout"
 import { useQueryClient } from "@tanstack/react-query"
@@ -51,6 +53,25 @@ export function TranslateTab() {
     if (!stageInfo) return 0
     
     return Math.round(stageInfo.base + (stageProgress * stageInfo.weight) / 100)
+  }
+
+  const handleReset = () => {
+    // Close WebSocket connection if active
+    if (wsRef.current) {
+      wsRef.current.close()
+    }
+    
+    // Reset all state
+    setVideoUrl("")
+    setTargetLanguage("")
+    setIsProcessing(false)
+    setTranscribedText("")
+    setTranslatedText("")
+    setInitialLanguage("")
+    setProgress(0)
+    setCurrentStage("")
+    
+    toast.success("Results cleared! Ready for new conversion.")
   }
 
   const handleProcess = async () => {
@@ -166,7 +187,7 @@ export function TranslateTab() {
   }
 
   return (
-    <div>
+    <div className="space-y-6">
       <InputForm
         videoUrl={videoUrl}
         setVideoUrl={setVideoUrl}
@@ -183,12 +204,32 @@ export function TranslateTab() {
       />
 
       {(transcribedText || translatedText) && (
-        <Results
-          transcribedText={transcribedText}
-          translatedText={translatedText}
-          targetLanguage={targetLanguage}
-          initialLanguage={initialLanguage}
-        />
+        <div className="space-y-4">
+          {/* Results Header with Reset Button */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Translation Results</h2>
+              <p className="text-gray-600">Your video has been successfully processed</p>
+            </div>
+            <Button
+              onClick={handleReset}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset Output 
+            </Button>
+          </div>
+
+          {/* Results Component */}
+          <Results
+            transcribedText={transcribedText}
+            translatedText={translatedText}
+            targetLanguage={targetLanguage}
+            initialLanguage={initialLanguage}
+          />
+        </div>
       )}
     </div>
   )

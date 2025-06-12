@@ -155,7 +155,7 @@ export function InputForm({
               }}
             >
               <Trash2 className="w-5 h-5" />
-              Clear All
+              Clear Form
             </Button>
           </div>
 
