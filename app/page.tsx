@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Youtube, FileText, Video, Edit } from "lucide-react"
-import { Header } from "@/components/youtube-translator/header"
 import { TranslateTab } from "@/components/tabs/translate-tab"
 import { BlogTab } from "@/components/tabs/blog-tab"
 import { SocialTab } from "@/components/tabs/social-tab"
@@ -13,10 +12,8 @@ export default function ContentCreator() {
   const [activeTab, setActiveTab] = useState("translate")
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 w-full">
-      <div className="mx-auto px-4 py-8 w-full max-w-6xl" >
-        <Header />  
-
+    <div className="min-h-screen w-full">
+      <div className="mx-auto px-4 py-8 w-full" >
         <Tabs defaultValue="translate" value={activeTab} onValueChange={setActiveTab} className="mb-8">
           <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-transparent">
             <TabsTrigger

@@ -8,7 +8,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 
 interface ProfileButtonProps {
   user: {
@@ -26,7 +25,7 @@ export function ProfileButton({ user, onLogout, onViewProfile }: ProfileButtonPr
     <DropdownMenu >
       <DropdownMenuTrigger asChild>
         <Button variant="ghost"
-         className="cursor-pointer absolute right-10 top-10 h-12 w-12 rounded-full">
+         className="cursor-pointer h-12 w-12 rounded-full">
           <UserCircle className="h-8 w-8" />
         </Button>
       </DropdownMenuTrigger>

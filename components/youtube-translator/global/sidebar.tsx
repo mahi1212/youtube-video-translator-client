@@ -204,7 +204,7 @@ export function Sidebar({
     <div
       className={`
       ${isCollapsed ? "w-16" : "w-80 sm:w-80 md:w-80 lg:w-80"} 
-      bg-white/80 backdrop-blur-xl border-r border-gray-200/50 flex flex-col h-screen shadow-xl
+      bg-white/80 backdrop-blur-xl border-r border-gray-100 flex flex-col h-screen
       transition-all duration-300 ease-in-out
     `}
     >
