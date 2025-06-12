@@ -36,6 +36,7 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [transcribedText, setTranscribedText] = useState("")
   const [translatedText, setTranslatedText] = useState("")
+  const [initialLanguage, setInitialLanguage] = useState("")
   const [progress, setProgress] = useState(0)
   const [currentStage, setCurrentStage] = useState("")
 
@@ -76,6 +77,7 @@ export default function Home() {
     setIsProcessing(true)
     setTranscribedText("")
     setTranslatedText("")
+    setInitialLanguage("")
     setProgress(0)
     setCurrentStage("Initializing...")
 
@@ -132,6 +134,7 @@ export default function Home() {
         case MessageTypes.PROCESSING_COMPLETE:
           setTranscribedText(data.data.transcription)
           setTranslatedText(data.data.translation)
+          setInitialLanguage(data.data.initialLanguage || "Auto-detected")
           setIsProcessing(false)
           setProgress(100)
           setCurrentStage("Complete")
@@ -186,6 +189,7 @@ export default function Home() {
         transcribedText={transcribedText}
         translatedText={translatedText}
         targetLanguage={targetLanguage}
+        initialLanguage={initialLanguage}
       />
 
       <Features />

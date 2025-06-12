@@ -59,6 +59,7 @@ export interface UsageHistoryItem {
   sourceText: string;
   resultText: string;
   targetLanguage?: string;
+  initialLanguage?: string;
   tokensUsed: number;
   createdAt: string;
 }

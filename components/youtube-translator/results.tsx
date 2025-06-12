@@ -16,12 +16,14 @@ interface ResultsProps {
   transcribedText: string;
   translatedText: string;
   targetLanguage: string;
+  initialLanguage?: string;
 }
 
 export function Results({
   transcribedText,
   translatedText,
   targetLanguage,
+  initialLanguage = "Auto-detected",
 }: ResultsProps) {
   if (!transcribedText && !translatedText) return null;
 
@@ -41,7 +43,7 @@ export function Results({
     // Set the file name
     const targetLang = languages.find((lang) => lang.value === targetLanguage)?.label.split(" ")[0] || targetLanguage;
     const fileName = type === "Transcription" 
-      ? "transcription_english.txt"
+      ? `transcription_${initialLanguage.toLowerCase().replace(/\s+/g, '_')}.txt`
       : `translation_${targetLang.toLowerCase()}.txt`;
     
     link.download = fileName;
@@ -68,11 +70,11 @@ export function Results({
               Original Transcription
             </CardTitle>
             <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-              English
+              {initialLanguage}
             </Badge>
           </div>
           <CardDescription>
-            AI-generated transcription from the video audio
+            AI-generated transcription from the video audio ({initialLanguage} detected)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -121,7 +123,7 @@ export function Results({
             </Badge>
           </div>
           <CardDescription>
-            AI-powered translation in your selected language
+            AI-powered translation from {initialLanguage} to your selected language
           </CardDescription>
         </CardHeader>
         <CardContent>
