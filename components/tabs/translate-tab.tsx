@@ -1,14 +1,25 @@
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import { InputForm } from "@/components/youtube-translator/input-form"
-import { Results } from "@/components/youtube-translator/results"
-import { Button } from "@/components/ui/button"
-import { RotateCcw } from "lucide-react"
-import { toast } from "sonner"
-import { useAppContext } from "@/components/youtube-translator/global/app-layout"
-import { useQueryClient } from "@tanstack/react-query"
-import { userKeys } from "@/hooks/useUser"
+import { useState, useRef } from "react";
+import { InputForm } from "@/components/youtube-translator/input-form";
+import { Results } from "@/components/youtube-translator/results";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { RotateCcw, Volume2, Mic, Sparkles, Clock } from "lucide-react";
+import { toast } from "sonner";
+import { useAppContext } from "@/components/youtube-translator/global/app-layout";
+import { useQueryClient } from "@tanstack/react-query";
+import { userKeys } from "@/hooks/useUser";
 
 // Message types from server
 const MessageTypes = {
@@ -18,7 +29,7 @@ const MessageTypes = {
   TRANSLATION_PROGRESS: "TRANSLATION_PROGRESS",
   PROCESSING_COMPLETE: "PROCESSING_COMPLETE",
   ERROR: "ERROR",
-}
+};
 
 export function TranslateTab() {
   const {
@@ -27,86 +38,104 @@ export function TranslateTab() {
     setOpenaiApiKey,
     setShowLoginModal,
     setShowPremiumModal,
-  } = useAppContext()
+  } = useAppContext();
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
-  const [videoUrl, setVideoUrl] = useState("")
-  const [targetLanguage, setTargetLanguage] = useState("")
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [transcribedText, setTranscribedText] = useState("")
-  const [translatedText, setTranslatedText] = useState("")
-  const [initialLanguage, setInitialLanguage] = useState("")
-  const [progress, setProgress] = useState(0)
-  const [currentStage, setCurrentStage] = useState("")
+  const [videoUrl, setVideoUrl] = useState("");
+  const [targetLanguage, setTargetLanguage] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [transcribedText, setTranscribedText] = useState("");
+  const [translatedText, setTranslatedText] = useState("");
+  const [initialLanguage, setInitialLanguage] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [currentStage, setCurrentStage] = useState("");
 
-  const wsRef = useRef<WebSocket | null>(null)
+  // Audio generation options (upcoming features)
+  const [generateTargetAudio, setGenerateTargetAudio] = useState(false);
+  const [keepOriginalAudio, setKeepOriginalAudio] = useState(true);
+  const [enableVoiceClone, setEnableVoiceClone] = useState(false);
+  const [selectedVoice, setSelectedVoice] = useState("");
+
+  const wsRef = useRef<WebSocket | null>(null);
 
   const calculateOverallProgress = (stage: string, stageProgress: number) => {
     const stageWeights = {
       download: { base: 0, weight: 20 },
       transcription: { base: 20, weight: 30 },
-      translation: { base: 50, weight: 50 }
-    }
-    
-    const stageInfo = stageWeights[stage as keyof typeof stageWeights]
-    if (!stageInfo) return 0
-    
-    return Math.round(stageInfo.base + (stageProgress * stageInfo.weight) / 100)
-  }
+      translation: { base: 50, weight: 50 },
+    };
+
+    const stageInfo = stageWeights[stage as keyof typeof stageWeights];
+    if (!stageInfo) return 0;
+
+    return Math.round(
+      stageInfo.base + (stageProgress * stageInfo.weight) / 100
+    );
+  };
 
   const handleReset = () => {
     // Close WebSocket connection if active
     if (wsRef.current) {
-      wsRef.current.close()
+      wsRef.current.close();
     }
-    
+
     // Reset all state
-    setVideoUrl("")
-    setTargetLanguage("")
-    setIsProcessing(false)
-    setTranscribedText("")
-    setTranslatedText("")
-    setInitialLanguage("")
-    setProgress(0)
-    setCurrentStage("")
-    
-    toast.success("Results cleared! Ready for new conversion.")
-  }
+    setVideoUrl("");
+    setTargetLanguage("");
+    setIsProcessing(false);
+    setTranscribedText("");
+    setTranslatedText("");
+    setInitialLanguage("");
+    setProgress(0);
+    setCurrentStage("");
+
+    // Reset audio options
+    setGenerateTargetAudio(false);
+    setKeepOriginalAudio(true);
+    setEnableVoiceClone(false);
+    setSelectedVoice("");
+
+    toast.success("Results cleared! Ready for new conversion.");
+  };
+
+  const handleUpcomingFeature = (featureName: string) => {
+    toast.info(`${featureName} is coming soon! Stay tuned for updates.`);
+  };
 
   const handleProcess = async () => {
     if (!videoUrl || !targetLanguage) {
-      toast.error("Please provide both YouTube URL and target language.")
-      return
+      toast.error("Please provide both YouTube URL and target language.");
+      return;
     }
 
     // Check if user is logged in
     if (!user) {
-      toast.error("Please log in to continue.")
-      setShowLoginModal(true)
-      return
+      toast.error("Please log in to continue.");
+      setShowLoginModal(true);
+      return;
     }
 
     // If user doesn't have stored API key and hasn't provided one in the form
     if (!user.is_api_key_available && !openaiApiKey) {
-      toast.error("Please provide your OpenAI API key.")
-      return
+      toast.error("Please provide your OpenAI API key.");
+      return;
     }
 
-    setIsProcessing(true)
-    setTranscribedText("")
-    setTranslatedText("")
-    setInitialLanguage("")
-    setProgress(0)
-    setCurrentStage("Initializing...")
+    setIsProcessing(true);
+    setTranscribedText("");
+    setTranslatedText("");
+    setInitialLanguage("");
+    setProgress(0);
+    setCurrentStage("Initializing...");
 
     // Close existing WebSocket connection if any
     if (wsRef.current) {
-      wsRef.current.close()
+      wsRef.current.close();
     }
 
     // Create new WebSocket connection
-    wsRef.current = new WebSocket("ws://localhost:5000")
+    wsRef.current = new WebSocket("ws://localhost:5000");
 
     wsRef.current.onopen = () => {
       if (wsRef.current) {
@@ -115,76 +144,80 @@ export function TranslateTab() {
             videoUrl,
             targetLang: targetLanguage,
             token: localStorage.getItem("token"),
-            openaiApiKey: openaiApiKey || null
-          }),
-        )
+            openaiApiKey: openaiApiKey || null,
+          })
+        );
       }
-    }
+    };
 
     wsRef.current.onmessage = (event) => {
-      const data = JSON.parse(event.data)
+      const data = JSON.parse(event.data);
 
       switch (data.type) {
         case MessageTypes.PROCESSING_STARTED:
-          setCurrentStage("Starting...")
-          setProgress(0)
-          break
+          setCurrentStage("Starting...");
+          setProgress(0);
+          break;
         case MessageTypes.DOWNLOAD_PROGRESS:
-          setCurrentStage("Downloading")
-          const downloadProgress = data.data.progress || 0
-          setProgress(calculateOverallProgress("download", downloadProgress))
-          break
+          setCurrentStage("Downloading");
+          const downloadProgress = data.data.progress || 0;
+          setProgress(calculateOverallProgress("download", downloadProgress));
+          break;
         case MessageTypes.TRANSCRIPTION_PROGRESS:
-          setCurrentStage("Transcribing")
-          const transcriptionProgress = data.data.progress || 0
-          setProgress(calculateOverallProgress("transcription", transcriptionProgress))
+          setCurrentStage("Transcribing");
+          const transcriptionProgress = data.data.progress || 0;
+          setProgress(
+            calculateOverallProgress("transcription", transcriptionProgress)
+          );
           if (data.data.transcription) {
-            setTranscribedText(data.data.transcription)
+            setTranscribedText(data.data.transcription);
           }
-          break
+          break;
         case MessageTypes.TRANSLATION_PROGRESS:
-          setCurrentStage("Translating")
-          const translationProgress = data.data.progress || 0
-          setProgress(calculateOverallProgress("translation", translationProgress))
+          setCurrentStage("Translating");
+          const translationProgress = data.data.progress || 0;
+          setProgress(
+            calculateOverallProgress("translation", translationProgress)
+          );
           if (data.data.currentTranslation) {
-            setTranslatedText(data.data.currentTranslation)
+            setTranslatedText(data.data.currentTranslation);
           }
-          break
+          break;
         case MessageTypes.PROCESSING_COMPLETE:
-          setTranscribedText(data.data.transcription)
-          setTranslatedText(data.data.translation)
-          setInitialLanguage(data.data.initialLanguage || "Auto-detected")
-          setIsProcessing(false)
-          setProgress(100)
-          setCurrentStage("Complete")
-          toast.success("Processing complete!")
+          setTranscribedText(data.data.transcription);
+          setTranslatedText(data.data.translation);
+          setInitialLanguage(data.data.initialLanguage || "Auto-detected");
+          setIsProcessing(false);
+          setProgress(100);
+          setCurrentStage("Complete");
+          toast.success("Processing complete!");
           // Invalidate user profile and history queries to update usage counts
-          queryClient.invalidateQueries({ queryKey: userKeys.profile() })
-          queryClient.invalidateQueries({ queryKey: userKeys.history() })
-          break
+          queryClient.invalidateQueries({ queryKey: userKeys.profile() });
+          queryClient.invalidateQueries({ queryKey: userKeys.history() });
+          break;
         case MessageTypes.ERROR:
-          toast.error(data.data.error)
-          setIsProcessing(false)
-          setProgress(0)
-          setCurrentStage("")
+          toast.error(data.data.error);
+          setIsProcessing(false);
+          setProgress(0);
+          setCurrentStage("");
           if (data.data.requiresUpgrade) {
-            setShowPremiumModal(true)
+            setShowPremiumModal(true);
           } else if (data.data.requiresAuth) {
-            setShowLoginModal(true)
+            setShowLoginModal(true);
           }
-          break
+          break;
         default:
-          break
+          break;
       }
-    }
+    };
 
     wsRef.current.onerror = () => {
-      toast.error("WebSocket connection error")
-      setIsProcessing(false)
-      setProgress(0)
-      setCurrentStage("")
-    }
-  }
+      toast.error("WebSocket connection error");
+      setIsProcessing(false);
+      setProgress(0);
+      setCurrentStage("");
+    };
+  };
 
   return (
     <div className="space-y-6">
@@ -203,13 +236,187 @@ export function TranslateTab() {
         hasStoredApiKey={user?.is_api_key_available || false}
       />
 
+      {/* Audio Generation Options */}
+      <Card className="bg-white/80 backdrop-blur border-0 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Volume2 className="w-5 h-5 text-purple-500" />
+            Audio Generation Options
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Generate Target Language Audio */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label
+                  htmlFor="generate-audio"
+                  className="text-base font-medium"
+                >
+                  Generate Audio in Target Language
+                </Label>
+                <p className="text-sm text-gray-600">
+                  Create AI-generated speech for the translated text
+                </p>
+              </div>
+              <Switch
+                id="generate-audio"
+                checked={generateTargetAudio}
+                onCheckedChange={setGenerateTargetAudio}
+              />
+            </div>
+
+            {generateTargetAudio && (
+              <div className="flex items-center justify-between gap-2 p-4 bg-gray-50 rounded-none border-l-4 border-purple-400 ">
+                <p className="text-sm font-medium text-gray-700">
+                  Choose a voice style
+                </p>
+                <div >
+                  <Select
+                    value={selectedVoice}
+                    onValueChange={setSelectedVoice}
+                  >
+                    <SelectTrigger className="mt-2 bg-white">
+                      <SelectValue placeholder="Choose a voice style" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="natural-male">
+                        Natural Male Voice
+                      </SelectItem>
+                      <SelectItem value="natural-female">
+                        Natural Female Voice
+                      </SelectItem>
+                      <SelectItem value="professional-male">
+                        Professional Male
+                      </SelectItem>
+                      <SelectItem value="professional-female">
+                        Professional Female
+                      </SelectItem>
+                      <SelectItem value="casual-male">Casual Male</SelectItem>
+                      <SelectItem value="casual-female">
+                        Casual Female
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Keep Original Audio */}
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="keep-original" className="text-base font-medium">
+                Preserve Original Audio Track
+              </Label>
+              <p className="text-sm text-gray-600">
+                Keep the original audio alongside the translated version
+              </p>
+            </div>
+            <Switch
+              id="keep-original"
+              checked={keepOriginalAudio}
+              onCheckedChange={setKeepOriginalAudio}
+            />
+          </div>
+
+          {/* Voice Cloning - Upcoming Feature */}
+          <div className="space-y-4 relative">
+            <div className="absolute top-0 right-0 bg-gradient-to-l from-purple-500 to-blue-500 text-white px-2 py-1 text-xs font-medium rounded-bl-lg rounded-tr-lg">
+              <Clock className="w-3 h-3 inline mr-1" />
+              Coming Soon
+            </div>
+            <div className="flex items-center justify-between opacity-60">
+              <div className="space-y-1">
+                <Label
+                  htmlFor="voice-clone"
+                  className="text-base font-medium flex items-center gap-2"
+                >
+                  <Mic className="w-4 h-4" />
+                  Voice Cloning
+                  <Badge variant="outline" className="text-xs">
+                    Premium
+                  </Badge>
+                </Label>
+                <p className="text-sm text-gray-600">
+                  Clone the original speaker&apos;s voice for the translated
+                  audio
+                </p>
+              </div>
+              <Switch
+                id="voice-clone"
+                checked={enableVoiceClone}
+                onCheckedChange={(checked) => {
+                  setEnableVoiceClone(checked);
+                  if (checked) handleUpcomingFeature("Voice Cloning");
+                }}
+                disabled
+              />
+            </div>
+
+            {enableVoiceClone && (
+              <div className="ml-4 p-4 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg border border-purple-200 opacity-60">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-4 h-4 text-purple-500" />
+                  <span className="text-sm font-medium text-purple-700">
+                    Advanced Voice Cloning
+                  </span>
+                </div>
+                <p className="text-xs text-gray-600 mb-3">
+                  Our AI will analyze the original speaker&apos;s voice
+                  characteristics and apply them to the translated audio.
+                </p>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span>Voice Tone Matching</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span>Accent Preservation</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span>Emotion Transfer</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span>Speaking Pace</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Voice Cloning Preview */}
+          {enableVoiceClone && (
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-4 h-4 text-blue-500" />
+                <span className="text-sm font-medium text-blue-700">
+                  Voice Cloning Coming Soon
+                </span>
+              </div>
+              <p className="text-xs text-gray-600">
+                Advanced voice cloning technology is currently in development.
+                Join our waitlist to be notified when it&apos;s available!
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {(transcribedText || translatedText) && (
         <div className="space-y-4">
           {/* Results Header with Reset Button */}
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">Translation Results</h2>
-              <p className="text-gray-600">Your video has been successfully processed</p>
+              <h2 className="text-2xl font-bold text-gray-900">
+                Translation Results
+              </h2>
+              <p className="text-gray-600">
+                Your video has been successfully processed
+              </p>
             </div>
             <Button
               onClick={handleReset}
@@ -218,7 +425,7 @@ export function TranslateTab() {
               className="flex items-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors"
             >
               <RotateCcw className="w-4 h-4" />
-              Reset Output 
+              Reset Output
             </Button>
           </div>
 
@@ -232,5 +439,5 @@ export function TranslateTab() {
         </div>
       )}
     </div>
-  )
-} 
+  );
+}

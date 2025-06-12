@@ -12,7 +12,7 @@ export default function ContentCreator() {
   const [activeTab, setActiveTab] = useState("translate")
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-10 px-4">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-10 px-4 pb-10">
       <Tabs defaultValue="translate" value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-4 h-16 bg-white/100 backdrop-blur-xl border border-white/20 rounded-xl">
             <TabsTrigger
