@@ -12,57 +12,91 @@ export default function ContentCreator() {
   const [activeTab, setActiveTab] = useState("translate")
 
   return (
-    <div className="min-h-screen w-full">
-      <div className="mx-auto px-4 py-8 w-full" >
-        <Tabs defaultValue="translate" value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-transparent">
+    <div className="min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-purple-50 pt-10 px-4">
+      <Tabs defaultValue="translate" value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-2 md:grid-cols-4 gap-4 h-16 bg-white/100 backdrop-blur-xl border border-white/20 rounded-xl">
             <TabsTrigger
               value="translate"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out
+                         data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-400 data-[state=active]:to-blue-600 
+                         data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105
+                         bg-white cursor-pointer 
+                         data-[state=inactive]:hover:scale-[1.02] transform"
             >
-              <Youtube className="w-4 h-4 mr-2" />
+              <Youtube className="w-5 h-5 mr-2" />
               Translate
+              <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-300/50 md:block hidden" />
             </TabsTrigger>
+            
             <TabsTrigger
               value="blog"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out
+                         data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-400 data-[state=active]:to-blue-600 
+                         data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105
+                         bg-white cursor-pointer 
+                         data-[state=inactive]:hover:scale-[1.02] transform"
             >
-              <Edit className="w-4 h-4 mr-2" />
+              <Edit className="w-5 h-5 mr-2" />
               Blog Post
+              <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-300/50 md:block hidden" />
             </TabsTrigger>
+            
             <TabsTrigger
               value="social"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out
+                         data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-400 data-[state=active]:to-blue-600 
+                         data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105
+                         bg-white cursor-pointer 
+                         data-[state=inactive]:hover:scale-[1.02] transform"
             >
-              <FileText className="w-4 h-4 mr-2" />
+              <FileText className="w-5 h-5 mr-2" />
               Social Posts
+              <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-300/50 md:block hidden" />
             </TabsTrigger>
+            
             <TabsTrigger
               value="video"
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-purple-600 data-[state=active]:text-white"
+              className="relative px-6 py-4 rounded-xl font-medium text-base transition-[transform,background-color,box-shadow] duration-300 ease-in-out
+                         data-[state=active]:bg-gradient-to-br data-[state=active]:from-blue-400 data-[state=active]:to-blue-600 
+                         data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105
+                         bg-white cursor-pointer 
+                         data-[state=inactive]:hover:scale-[1.02] transform"
             >
-              <Video className="w-4 h-4 mr-2" />
+              <Video className="w-5 h-5 mr-2" />
               Generate Video
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="translate">
-            <TranslateTab />
-          </TabsContent>
+          <div className="mt-8">
+            <TabsContent 
+              value="translate" 
+              className="animate-in fade-in-50 slide-in-from-bottom-4 duration-500"
+            >
+              <TranslateTab />
+            </TabsContent>
 
-          <TabsContent value="blog">
-            <BlogTab />
-          </TabsContent>
+            <TabsContent 
+              value="blog" 
+              className="animate-in fade-in-50 slide-in-from-bottom-4 duration-500"
+            >
+              <BlogTab />
+            </TabsContent>
 
-          <TabsContent value="social">
-            <SocialTab />
-          </TabsContent>
+            <TabsContent 
+              value="social" 
+              className="animate-in fade-in-50 slide-in-from-bottom-4 duration-500"
+            >
+              <SocialTab />
+            </TabsContent>
 
-          <TabsContent value="video">
-            <VideoTab />
-          </TabsContent>
+            <TabsContent 
+              value="video" 
+              className="animate-in fade-in-50 slide-in-from-bottom-4 duration-500"
+            >
+              <VideoTab />
+            </TabsContent>
+          </div>
         </Tabs>
-      </div>
     </div>
   )
 }   
