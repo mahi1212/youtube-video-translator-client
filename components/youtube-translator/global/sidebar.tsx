@@ -66,6 +66,7 @@ interface SidebarProps {
   paymentHistory?: PaymentHistoryItem[];
   isLoadingPayments?: boolean;
   isCollapsed: boolean;
+  isLoadingUser: boolean;
   onCollapseToggle: () => void;
   onLoginClick: () => void;
   onProfileClick: () => void;
@@ -79,6 +80,7 @@ export function Sidebar({
   paymentHistory,
   isLoadingPayments,
   isCollapsed,
+  isLoadingUser,
   onCollapseToggle,
   onLoginClick,
   onProfileClick,
@@ -112,6 +114,91 @@ export function Sidebar({
         return "text-gray-600 bg-gray-100";
     }
   };
+
+  // Show skeleton loading state while user data is loading
+  if (isLoadingUser) {
+    return (
+      <div
+        className={`
+        ${isCollapsed ? "w-16" : "w-80 sm:w-80 md:w-80 lg:w-80"} 
+        bg-white/80 backdrop-blur-xl border-r border-gray-200/50 flex flex-col h-screen shadow-xl
+        transition-all duration-300 ease-in-out
+      `}
+      >
+        {/* Loading Profile Section */}
+        <div className="p-4 sm:p-6 bg-blue-600 text-white flex-shrink-0">
+          {!isCollapsed ? (
+            <>
+              <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
+                <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/20" />
+                <div className="flex-1 min-w-0">
+                  <Skeleton className="h-4 sm:h-5 w-24 sm:w-32 mb-2 bg-white/20" />
+                  <Skeleton className="h-3 sm:h-4 w-32 sm:w-40 bg-white/20" />
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                <Skeleton className="h-5 w-20 bg-white/20" />
+                <Skeleton className="h-5 w-16 bg-white/20" />
+              </div>
+              <div className="flex justify-center gap-2">
+                <Skeleton className="h-8 flex-1 bg-white/20" />
+                <Skeleton className="h-8 w-8 bg-white/20" />
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center space-y-2">
+              <Skeleton className="h-10 w-10 rounded-full bg-white/20" />
+              <Skeleton className="h-8 w-8 bg-white/20" />
+            </div>
+          )}
+        </div>
+
+        {!isCollapsed ? (
+          <div className="flex-1 flex flex-col min-h-0">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50/50 border-b border-gray-200/50 flex-shrink-0">
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="flex-1 p-4 space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="p-3 sm:p-4 rounded-xl border border-gray-200/50">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <Skeleton className="h-8 w-8 rounded-lg" />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-3 w-12" />
+                      </div>
+                      <Skeleton className="h-3 w-32" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col pt-4 pb-16">
+            <div className="flex flex-col items-center space-y-4">
+              <Skeleton className="h-8 w-8" />
+              <Skeleton className="h-10 w-10" />
+              <Skeleton className="h-10 w-10" />
+            </div>
+          </div>
+        )}
+
+        {/* Loading Logout Button */}
+        <div className="flex-shrink-0 p-3 sm:p-4 border-t border-gray-200/50 bg-white/90 backdrop-blur-sm">
+          {!isCollapsed ? (
+            <Skeleton className="h-9 w-full" />
+          ) : (
+            <div className="flex justify-center">
+              <Skeleton className="h-10 w-10" />
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

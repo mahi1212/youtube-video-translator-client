@@ -7,6 +7,8 @@ import { Results } from "@/components/youtube-translator/results"
 import { Features } from "@/components/youtube-translator/features"
 import { toast } from "sonner"  
 import { useAppContext } from "@/components/youtube-translator/global/app-layout"
+import { useQueryClient } from "@tanstack/react-query"
+import { userKeys } from "@/hooks/useUser"
 
 // Message types from server
 const MessageTypes = {
@@ -25,8 +27,9 @@ export default function Home() {
     setOpenaiApiKey,
     setShowLoginModal,
     setShowPremiumModal,
-    fetchHistory,
   } = useAppContext()
+
+  const queryClient = useQueryClient()
 
   const [videoUrl, setVideoUrl] = useState("")
   const [targetLanguage, setTargetLanguage] = useState("")
@@ -133,11 +136,9 @@ export default function Home() {
           setProgress(100)
           setCurrentStage("Complete")
           toast.success("Processing complete!")
-          // Refresh history after successful processing
-          const token = localStorage.getItem("token")
-          if (token) {
-            fetchHistory(token)
-          }
+          // Invalidate user profile and history queries to update usage counts
+          queryClient.invalidateQueries({ queryKey: userKeys.profile() })
+          queryClient.invalidateQueries({ queryKey: userKeys.history() })
           break
         case MessageTypes.ERROR:
           toast.error(data.data.error)

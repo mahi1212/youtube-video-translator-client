@@ -5,18 +5,19 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { useRegister } from "@/hooks/useAuth";
+import type { User } from "@/lib/api";
 
 interface RegisterModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: (data: { token: string; user: any }) => void;
+  onSuccess: (data: { token: string; user: User }) => void;
   onLoginClick: () => void;
 }
 
@@ -29,7 +30,8 @@ export function RegisterModal({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  
+  const registerMutation = useRegister();
 
   const handleSubmit = async () => {
     if (!name || !email || !password) {
@@ -37,30 +39,15 @@ export function RegisterModal({
       return;
     }
 
-    setIsLoading(true);
-    try {
-      const response = await fetch("http://localhost:5000/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    registerMutation.mutate(
+      { name, email, password },
+      {
+        onSuccess: (data) => {
+          onSuccess(data);
+          onOpenChange(false);
         },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Registration failed");
       }
-
-      onSuccess(data);
-      onOpenChange(false);
-      toast.success("Registered successfully!");
-    } catch (error: any) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
 
   return (
@@ -105,10 +92,10 @@ export function RegisterModal({
         <div className="flex-col gap-2 sm:gap-0">
           <Button
             onClick={handleSubmit}
-            disabled={isLoading}
+            disabled={registerMutation.isPending}
             className="w-full"
           >
-            {isLoading ? (
+            {registerMutation.isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Creating account...

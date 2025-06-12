@@ -13,20 +13,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2, CheckCircle } from "lucide-react";
 import { encryptData } from "@/utils/encryption";
+import { useUpdateApiKey } from "@/hooks/useUser";
+import type { User } from "@/lib/api";
 
 interface ProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: {
-    name: string;
-    email: string;
-    subscription: string;
-    usageLimit: number;
-    daily_usage: number;
-    total_usage: number;
-    is_api_key_available: boolean;
-    apiKey?: string;
-  };
+  user: User;
   onApiKeyUpdate: (apiKey: string) => void;
 }
 
@@ -37,7 +30,8 @@ export function ProfileModal({
   onApiKeyUpdate,
 }: ProfileModalProps) {
   const [apiKey, setApiKey] = useState(user.apiKey || "");
-  const [isUpdating, setIsUpdating] = useState(false);
+  
+  const updateApiKeyMutation = useUpdateApiKey();
 
   const handleApiKeyUpdate = async () => {
     if (!apiKey.startsWith('sk-')) {
@@ -45,32 +39,18 @@ export function ProfileModal({
       return;
     }
 
-    setIsUpdating(true);
-    try {
-      // Encrypt API key before sending
-      const encryptedApiKey = encryptData(apiKey);
-      
-      const response = await fetch("http://localhost:5000/api/update-api-key", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+    // Encrypt API key before sending
+    const encryptedApiKey = encryptData(apiKey);
+    
+    updateApiKeyMutation.mutate(
+      { apiKey: encryptedApiKey },
+      {
+        onSuccess: () => {
+          onApiKeyUpdate(apiKey);
+          onOpenChange(false);
         },
-        body: JSON.stringify({ apiKey: encryptedApiKey }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update API key");
       }
-
-      onApiKeyUpdate(apiKey);
-      toast.success("API key updated successfully");
-      onOpenChange(false);
-    } catch (error: any) {
-      toast.error(error instanceof Error ? error.message : 'Failed to update API key');
-    } finally {
-      setIsUpdating(false);
-    }
+    );
   };
 
   return (
@@ -138,10 +118,10 @@ export function ProfileModal({
               />
               <Button
                 onClick={handleApiKeyUpdate}
-                disabled={isUpdating}
+                disabled={updateApiKeyMutation.isPending}
                 size="sm"
               >
-                {isUpdating ? (
+                {updateApiKeyMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   user.is_api_key_available ? "Update" : "Save"

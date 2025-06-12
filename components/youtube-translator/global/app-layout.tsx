@@ -10,30 +10,9 @@ import { UsageDetailsModal } from "@/components/history/usage-details-modal"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { toast } from "sonner"
-
-interface User {
-  id: string
-  name: string
-  email: string
-  subscription: string
-  usageLimit: number
-  daily_usage: number
-  total_usage: number
-  is_api_key_available: boolean
-  apiKey?: string
-}
-
-interface UsageHistoryItem {
-  _id: string
-  type: string
-  sourceType: string
-  sourceUrl?: string
-  sourceText: string
-  resultText: string
-  targetLanguage?: string
-  tokensUsed: number
-  createdAt: string
-}
+import { useUserProfile, useUserHistory, userKeys } from "@/hooks/useUser"
+import { useQueryClient } from "@tanstack/react-query"
+import type { User, UsageHistoryItem } from "@/lib/api"
 
 interface AppContextType {
   user: User | null
@@ -52,8 +31,6 @@ interface AppContextType {
   setShowPremiumModal: (show: boolean) => void
   isSidebarCollapsed: boolean
   setIsSidebarCollapsed: (collapsed: boolean) => void
-  fetchUserProfile: (token: string) => Promise<void>
-  fetchHistory: (token: string) => Promise<void>
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
@@ -71,8 +48,6 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const [usageHistory, setUsageHistory] = useState<UsageHistoryItem[]>([])
   const [openaiApiKey, setOpenaiApiKey] = useState("")
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [showRegisterModal, setShowRegisterModal] = useState(false)
@@ -82,6 +57,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+
+  const queryClient = useQueryClient()
+  
+  // React Query hooks
+  const { data: user, isLoading: isLoadingUser } = useUserProfile()
+  const { data: usageHistory = [] } = useUserHistory()
 
   // Load collapsed state from localStorage on mount
   useEffect(() => {
@@ -96,13 +77,12 @@ export function AppLayout({ children }: AppLayoutProps) {
     localStorage.setItem('sidebarCollapsed', JSON.stringify(isSidebarCollapsed))
   }, [isSidebarCollapsed])
 
+  // Set API key when user data changes
   useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (token) {
-      fetchUserProfile(token)
-      fetchHistory(token)
+    if (user?.apiKey) {
+      setOpenaiApiKey(user.apiKey)
     }
-  }, [])
+  }, [user])
 
   // Close mobile sidebar when clicking outside or on route change
   useEffect(() => {
@@ -120,63 +100,21 @@ export function AppLayout({ children }: AppLayoutProps) {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const fetchUserProfile = async (token: string) => {
-    try {
-      const response = await fetch("http://localhost:5000/api/profile", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch profile")
-      }
-
-      const userData = await response.json()
-      setUser(userData)
-      if (userData.apiKey) {
-        setOpenaiApiKey(userData.apiKey)
-      }
-    } catch {
-      localStorage.removeItem("token")
-      setUser(null)
-    }
-  }
-
-  const fetchHistory = async (token: string) => {
-    try {
-      const response = await fetch("http://localhost:5000/api/history", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch history")
-      }
-
-      const data = await response.json()
-      setUsageHistory(data)
-    } catch {
-      toast.error("Error fetching history")
-    }
-  }
-
   const handleAuthSuccess = (data: { token: string; user: User }) => {
     localStorage.setItem("token", data.token)
-    setUser(data.user)
     if (data.user.apiKey) {
       setOpenaiApiKey(data.user.apiKey)
     }
-    fetchHistory(data.token)
+    // Invalidate and refetch user data
+    queryClient.invalidateQueries({ queryKey: userKeys.all })
     setIsMobileSidebarOpen(false) // Close mobile sidebar after login
   }
 
   const handleLogout = () => {
     localStorage.removeItem("token")
-    setUser(null)
     setOpenaiApiKey("")
-    setUsageHistory([])
+    // Clear all user-related queries
+    queryClient.removeQueries({ queryKey: userKeys.all })
     setIsMobileSidebarOpen(false) // Close mobile sidebar on logout
     toast.success("Logged out successfully")
   }
@@ -190,10 +128,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   const contextValue: AppContextType = {
-    user,
-    setUser,
+    user: user ?? null,
+    setUser: () => {}, // Not needed with React Query
     usageHistory,
-    setUsageHistory,
+    setUsageHistory: () => {}, // Not needed with React Query
     openaiApiKey,
     setOpenaiApiKey,
     showLoginModal,
@@ -206,14 +144,12 @@ export function AppLayout({ children }: AppLayoutProps) {
     setShowPremiumModal,
     isSidebarCollapsed,
     setIsSidebarCollapsed,
-    fetchUserProfile,
-    fetchHistory,
   }
 
   return (
     <AppContext.Provider value={contextValue}>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-        <div className="flex h-screen relative">
+      <div className="h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 overflow-hidden">
+        <div className="flex h-full relative">
           {/* Mobile Menu Button */}
           <Button
             variant="outline"
@@ -239,16 +175,17 @@ export function AppLayout({ children }: AppLayoutProps) {
           {/* Sidebar */}
           <div className={`
             fixed lg:relative 
-            inset-y-0 left-0 z-40
+            inset-y-0 left-0 z-40 h-full
             transform transition-all duration-300 ease-in-out
             ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             ${isSidebarCollapsed ? 'lg:w-16' : 'lg:w-80'}
           `}>
             <Sidebar
-              user={user}
+              user={user ?? null}
               usageHistory={usageHistory}
               paymentHistory={[]}
               isCollapsed={isSidebarCollapsed}
+              isLoadingUser={isLoadingUser}
               onCollapseToggle={toggleSidebarCollapse}
               onLoginClick={() => {
                 setShowLoginModal(true)
@@ -269,9 +206,12 @@ export function AppLayout({ children }: AppLayoutProps) {
 
           {/* Main Content */}
           <div className={`
-            flex-1 overflow-auto flex justify-center items-center transition-all duration-300 ease-in-out pt-[800px] lg:pt-0
+            flex-1 h-full overflow-auto transition-all duration-300 ease-in-out
+            ${isSidebarCollapsed ? 'lg:ml-0' : 'lg:ml-0'}
           `}>
-            {children}
+            <div className="min-h-full flex justify-center items-center p-4">
+              {children}
+            </div>
           </div>
         </div>
 
@@ -303,7 +243,6 @@ export function AppLayout({ children }: AppLayoutProps) {
               onOpenChange={setShowProfileModal}
               user={user}
               onApiKeyUpdate={(apiKey) => {
-                setUser({ ...user, apiKey })
                 setOpenaiApiKey(apiKey)
               }}
             />
