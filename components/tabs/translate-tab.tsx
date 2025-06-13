@@ -57,7 +57,7 @@ export function TranslateTab() {
   const [generateTargetAudio, setGenerateTargetAudio] = useState(false);
   const [keepOriginalAudio, setKeepOriginalAudio] = useState(true);
   const [enableVoiceClone, setEnableVoiceClone] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState("");
+  const [selectedVoice, setSelectedVoice] = useState("alloy");
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -149,7 +149,8 @@ export function TranslateTab() {
             targetLang: targetLanguage,
             token: localStorage.getItem("token"),
             openaiApiKey: openaiApiKey || null,
-            generateTargetAudio,
+            shouldKeepOriginalAudio: keepOriginalAudio,
+            shouldGenerateTargetAudio: generateTargetAudio,
             selectedVoice,
           })
         );
@@ -291,23 +292,35 @@ export function TranslateTab() {
                           <SelectValue placeholder="Choose a voice style" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="natural-male">
-                            Natural Male Voice
+                          <SelectItem value="alloy">
+                            Alloy
                           </SelectItem>
-                          <SelectItem value="natural-female">
-                            Natural Female Voice
+                          <SelectItem value="ash">
+                            Ash
                           </SelectItem>
-                          <SelectItem value="professional-male">
-                            Professional Male
+                          <SelectItem value="ballad">
+                            Ballad
                           </SelectItem>
-                          <SelectItem value="professional-female">
-                            Professional Female
+                          <SelectItem value="coral">
+                            Coral
                           </SelectItem>
-                          <SelectItem value="casual-male">
-                            Casual Male
+                          <SelectItem value="echo">
+                            Echo
                           </SelectItem>
-                          <SelectItem value="casual-female">
-                            Casual Female
+                          <SelectItem value="fable">
+                            Fable
+                          </SelectItem>
+                          <SelectItem value="nova">
+                            Nova
+                          </SelectItem>
+                          <SelectItem value="onyx">
+                            Onyx
+                          </SelectItem>
+                          <SelectItem value="sage">
+                            Sage
+                          </SelectItem>
+                          <SelectItem value="shimmer">
+                            Shimmer
                           </SelectItem>
                         </SelectContent>
                       </Select>

@@ -33,6 +33,7 @@ interface InputFormProps {
 }
 
 export const languages = [
+  { value: "English", label: "English (English)" },
   { value: "Bengali", label: "Bengali (বাংলা)" },
   { value: "Hindi", label: "Hindi (हिन्दी)" },
   { value: "Spanish", label: "Spanish (Español)" },
