@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'http://localhost:5000';
 
 // Create axios instance
 export const apiClient = axios.create({
@@ -101,16 +101,44 @@ export const authService = {
 
 export const userService = {
   getProfile: async (): Promise<User> => {
-    const response = await apiClient.get<User>('/profile');
-    return response.data;
+    const response = await fetch(`${BASE_URL}/api/profile`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch profile');
+    return response.json();
   },
 
   updateApiKey: async (data: UpdateApiKeyRequest): Promise<void> => {
-    await apiClient.post('/update-api-key', data);
+    const response = await fetch(`${BASE_URL}/api/update-api-key`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to update API key');
   },
 
   getHistory: async (): Promise<UsageHistoryItem[]> => {
-    const response = await apiClient.get<UsageHistoryItem[]>('/history');
-    return response.data;
+    const response = await fetch(`${BASE_URL}/api/history`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch history');
+    return response.json();
+  },
+
+  getHistoryAudio: async (historyId: string): Promise<{ initialAudioData: string | null; targetAudioData: string | null }> => {
+    const response = await fetch(`${BASE_URL}/api/history/${historyId}/audio`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to fetch audio data');
+    return response.json();
   },
 }; 

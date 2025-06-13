@@ -87,6 +87,11 @@ export function Sidebar({
   onLogout,
   onHistoryItemClick,
 }: SidebarProps) {
+  const handleHistoryItemClick = async (item: UsageHistoryItem) => {
+    // Call onHistoryItemClick with the item
+    onHistoryItemClick(item);
+  };
+
   const getHistoryIcon = (type: string, sourceType: string) => {
     if (type === "transcription") {
       return sourceType === "youtube" ? (
@@ -356,7 +361,7 @@ export function Sidebar({
                           <div
                             key={item._id}
                             className="group relative p-3 sm:p-4 rounded-xl hover:bg-gray-50/80 cursor-pointer transition-all duration-200 hover:shadow-sm border border-transparent hover:border-gray-200/50"
-                            onClick={() => onHistoryItemClick(item)}
+                            onClick={() => handleHistoryItemClick(item)}
                           >
                             <div className="flex items-start gap-2 sm:gap-3">
                               <div

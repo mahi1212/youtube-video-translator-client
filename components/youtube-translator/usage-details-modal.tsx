@@ -13,17 +13,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useState } from "react";
 import { Copy, Download, Check } from "lucide-react";
 import { toast } from "sonner";
+import { useHistoryAudio } from "@/hooks/useUser";
 
 interface UsageDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   item: {
+    _id: string;
     type: string;
     sourceText: string;
     resultText: string;
     targetLanguage?: string;
-    targetAudioData?: string;
-    initialAudioData?: string;
     sourceType: string;
     createdAt: string;
   } | null;
@@ -36,6 +36,11 @@ export function UsageDetailsModal({
 }: UsageDetailsModalProps) {
   const [copiedOriginal, setCopiedOriginal] = useState(false);
   const [copiedResult, setCopiedResult] = useState(false);
+
+  // Fetch audio data when modal is open and item is available
+  const { data: audioData, isLoading: isLoadingAudio } = useHistoryAudio(
+    open && item ? item._id : null
+  );
 
   if (!item) return null;
 
@@ -160,28 +165,31 @@ export function UsageDetailsModal({
                     </CardHeader>
                     <CardContent>
                       {/* original audio section */}
-                      {
-                        item.initialAudioData && (
-                          <div className="space-y-4 mb-4">
+                      {isLoadingAudio ? (
+                        <div className="space-y-4 mb-4">
+                          <div className="w-full h-12 bg-gray-100 animate-pulse rounded-md" />
+                          <div className="w-full h-8 bg-gray-100 animate-pulse rounded-md" />
+                        </div>
+                      ) : audioData?.initialAudioData ? (
+                        <div className="space-y-4 mb-4">
                           <audio
                             controls
                             className="w-full"
-                            src={`data:audio/mpeg;base64,${item?.initialAudioData}`}
+                            src={`data:audio/mpeg;base64,${audioData.initialAudioData}`}
                           >
                             Your browser does not support the audio element.
                           </audio>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => downloadAudio(item.initialAudioData || "", "original")}
+                            onClick={() => downloadAudio(audioData.initialAudioData || "", "original")}
                             className="w-full"
                           >
                             <Download className="w-4 h-4 mr-2" />
                             Download Original Audio
                           </Button>
                         </div>
-                        )
-                      }
+                      ) : null}
 
                       <ScrollArea className="h-[55vh] w-full rounded-md border p-4">
                         <div className="whitespace-pre-wrap text-sm">
@@ -229,28 +237,31 @@ export function UsageDetailsModal({
                     </CardHeader>
                     <CardContent>
                        {/* translated audio section */}
-                       {
-                        item.targetAudioData && (
-                          <div className="space-y-4 mb-4">
+                       {isLoadingAudio ? (
+                        <div className="space-y-4 mb-4">
+                          <div className="w-full h-12 bg-gray-100 animate-pulse rounded-md" />
+                          <div className="w-full h-8 bg-gray-100 animate-pulse rounded-md" />
+                        </div>
+                      ) : audioData?.targetAudioData ? (
+                        <div className="space-y-4 mb-4">
                           <audio
                             controls
                             className="w-full"
-                            src={`data:audio/mpeg;base64,${item.targetAudioData}`}
+                            src={`data:audio/mpeg;base64,${audioData.targetAudioData}`}
                           >
                             Your browser does not support the audio element.
                           </audio>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => downloadAudio(item?.targetAudioData || "", "translated")}
+                            onClick={() => downloadAudio(audioData.targetAudioData || "", "translated")}
                             className="w-full"
                           >
                             <Download className="w-4 h-4 mr-2" />
                             Download Translated Audio
                           </Button>
                         </div>
-                        )
-                      }
+                      ) : null}
 
                       <ScrollArea className="h-[55vh] w-full rounded-md border p-4">
                         <div className="whitespace-pre-wrap text-sm">

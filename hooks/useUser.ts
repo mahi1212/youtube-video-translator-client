@@ -7,6 +7,7 @@ export const userKeys = {
   all: ['user'] as const,
   profile: () => [...userKeys.all, 'profile'] as const,
   history: () => [...userKeys.all, 'history'] as const,
+  historyAudio: (historyId: string) => [...userKeys.all, 'history', historyId, 'audio'] as const,
 };
 
 export const useUserProfile = () => {
@@ -23,6 +24,15 @@ export const useUserHistory = () => {
     queryKey: userKeys.history(),
     queryFn: userService.getHistory,
     enabled: !!localStorage.getItem('token'),
+    retry: false,
+  });
+};
+
+export const useHistoryAudio = (historyId: string | null) => {
+  return useQuery<{ initialAudioData: string | null; targetAudioData: string | null }, Error>({
+    queryKey: userKeys.historyAudio(historyId || ''),
+    queryFn: () => userService.getHistoryAudio(historyId!),
+    enabled: !!historyId && !!localStorage.getItem('token'),
     retry: false,
   });
 };
