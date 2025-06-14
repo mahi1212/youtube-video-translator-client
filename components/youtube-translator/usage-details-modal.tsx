@@ -106,18 +106,19 @@ export function UsageDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full h-[80vh] p-0 overflow-auto">
+      <DialogContent className="!max-w-[900px] h-[80vh] p-0 overflow-auto">
         <div className="flex flex-col">
           <DialogHeader className="px-6 py-4 border-b flex-shrink-0">
             <DialogTitle className="text-md capitalize">
-              {item.type} Details - {new Date(item.createdAt).toLocaleString()}
+              {item.type} Details 
+              <span className="text-sm text-gray-500"> - {new Date(item.createdAt).toLocaleString()}</span>
             </DialogTitle>
           </DialogHeader>
 
           <div className="flex-1 overflow-hidden">
             <div className="h-fit p-2 space-y-4">
               <Tabs defaultValue="result" className="w-full cursor-pointer">
-                <TabsList className="grid w-full grid-cols-2 ">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
                   <TabsTrigger value="original">
                     {item.type === "transcription"
                       ? "Original Audio Content"
@@ -131,7 +132,7 @@ export function UsageDetailsModal({
                 </TabsList>
 
                 <TabsContent value="original">
-                  <Card className="w-full">
+                  <Card className="w-full border-0 shadow-none -mt-4">
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle className="text-lg">
                         {item.type === "transcription"
@@ -202,7 +203,7 @@ export function UsageDetailsModal({
                 </TabsContent>
 
                 <TabsContent value="result">
-                  <Card className="w-full">
+                  <Card className="w-full border-0 shadow-none -mt-4">
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle className="text-lg">
                         {item.type === "transcription"
