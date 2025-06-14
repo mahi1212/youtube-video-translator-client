@@ -134,7 +134,7 @@ export function InputForm({
           <Button
             onClick={onProcess}
             disabled={isProcessing || !videoUrl || !targetLanguage}
-            className="flex-1 h-12 text-lg cursor-pointer font-medium bg-gradient-to-br from-blue-300 to-blue-600 hover:from-blue-400 hover:to-blue-700 transition-all duration-300 ease-in-out"
+            className="flex-1 h-12 text-lg cursor-pointer font-medium bg-gradient-to-br from-blue-400 to-blue-700 transition-all duration-300 ease-in-out"
           >
             {isProcessing ? (
               <>

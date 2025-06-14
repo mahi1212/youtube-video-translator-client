@@ -462,7 +462,7 @@ export function TranslateTab() {
 
           {/* Results Component */}
           <Results
-            transcribedText={transcribedText}
+            transcribedText={'asd'}
             translatedText={translatedText}
             targetLanguage={targetLanguage}
             initialLanguage={initialLanguage}

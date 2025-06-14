@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Youtube, FileText, Video, Edit } from "lucide-react"
+import { Youtube, FileText, Video } from "lucide-react"
 import { TranslateTab } from "@/components/tabs/translate-tab"
 import { BlogTab } from "@/components/tabs/blog-tab"
 import { SocialTab } from "@/components/tabs/social-tab"
