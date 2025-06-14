@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { languages } from "./input-form";
+import { languages } from "./language-combobox";
 
 interface ResultsProps {
   transcribedText: string;

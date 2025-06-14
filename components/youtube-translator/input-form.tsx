@@ -1,14 +1,7 @@
-import { Play, Loader2, Languages, Trash2, CheckCircle } from "lucide-react";
+import { Play, Loader2, Trash2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Card,
   CardContent,
@@ -16,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { LanguageCombobox } from "./language-combobox";
 
 interface InputFormProps {
   videoUrl: string;
@@ -31,18 +25,6 @@ interface InputFormProps {
   showApiKeyInput?: boolean;
   hasStoredApiKey?: boolean;
 }
-
-export const languages = [
-  { value: "English", label: "English (English)" },
-  { value: "Bengali", label: "Bengali (বাংলা)" },
-  { value: "Hindi", label: "Hindi (हिन्दी)" },
-  { value: "Spanish", label: "Spanish (Español)" },
-  { value: "French", label: "French (Français)" },
-  { value: "German", label: "German (Deutsch)" },
-  { value: "Chinese", label: "Chinese (中文)" },
-  { value: "Arabic", label: "Arabic (العربية)" },
-  { value: "Japanese", label: "Japanese (日本語)" },
-];
 
 export function InputForm({
   videoUrl,
@@ -85,31 +67,20 @@ export function InputForm({
         </div>
 
         <div className="flex gap-4 items-center w-full justify-between flex-wrap md:flex-nowrap">
-          <div className="space-y-2">
+          <div className="space-y-2 w-full">
             <Label htmlFor="target-language" className="text-sm font-medium">
               Target Language
             </Label>
-            <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-              <SelectTrigger className="h-12">
-                <SelectValue placeholder="Select a language to translate to" />
-              </SelectTrigger>
-              <SelectContent>
-                {languages.map((lang) => (
-                  <SelectItem key={lang.value} value={lang.value}>
-                    <div className="flex items-center gap-2">
-                      <Languages className="w-4 h-4" />
-                      {lang.label}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <LanguageCombobox 
+              value={targetLanguage}
+              onChange={setTargetLanguage}
+            />
           </div>
 
           {showApiKeyInput && (
             <div className="space-y-2 w-full">
               <Label htmlFor="openai-api-key" className="text-sm font-medium flex items-center gap-2">
-                OpenAI API Key
+                  OpenAI API Key
                 {hasStoredApiKey && (
                   <div className="flex items-center gap-1 text-green-600">
                     <CheckCircle className="w-4 h-4" />
@@ -124,7 +95,7 @@ export function InputForm({
                   value={openaiApiKey}
                   onChange={(e) => setOpenaiApiKey(e.target.value)}
                   type="password"
-                  className="w-full"
+                  className="w-full h-12"
                   disabled={isProcessing}
                 />
                 {hasStoredApiKey && !openaiApiKey && (
@@ -148,7 +119,7 @@ export function InputForm({
             <Button
               disabled={isProcessing}
               variant="default"
-              className="h-12 cursor-pointer px-4 flex items-center justify-center gap-2 transition-colors duration-200"
+              className="h-11 cursor-pointer px-4 flex items-center justify-center gap-2 transition-colors duration-200 "
               onClick={() => {
                 setVideoUrl("");
                 setTargetLanguage("");
@@ -156,14 +127,14 @@ export function InputForm({
               }}
             >
               <Trash2 className="w-5 h-5" />
-              Clear Form
+              Reset 
             </Button>
           </div>
 
           <Button
             onClick={onProcess}
             disabled={isProcessing || !videoUrl || !targetLanguage}
-            className="flex-1 h-12 text-lg cursor-pointer font-medium bg-gradient-to-r from-red-500 to-purple-600 hover:from-red-600 hover:to-purple-700 transition-all duration-300 ease-in-out"
+            className="flex-1 h-12 text-lg cursor-pointer font-medium bg-gradient-to-br from-blue-300 to-blue-600 hover:from-blue-400 hover:to-blue-700 transition-all duration-300 ease-in-out"
           >
             {isProcessing ? (
               <>
