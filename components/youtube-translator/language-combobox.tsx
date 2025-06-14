@@ -78,7 +78,7 @@ export function LanguageCombobox({ value, onChange }: LanguageComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between h-12"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
             <Languages className="w-4 h-4" />
             {value
               ? languages.find((language) => language.value === value)?.label

@@ -222,7 +222,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             ${isSidebarCollapsed ? "lg:ml-0" : "lg:ml-0"}
           `}
           >
-            <div className="min-h-full flex justify-center items-center flex-col w-full">
+            <div className="flex justify-center items-center flex-col w-full">
               <Header />
               
               <main className="w-full -mt-8">
