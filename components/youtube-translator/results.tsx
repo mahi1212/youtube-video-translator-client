@@ -9,26 +9,130 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { languages } from "./language-combobox";
+import { useState, useEffect } from "react";
+import { useEditText, useRetranslate, useRemakeAudio } from "@/hooks/useUser";
 
 interface ResultsProps {
+  historyId?: string;
   transcribedText: string;
   translatedText: string;
   targetLanguage: string;
   initialLanguage?: string;
   initialAudioData?: string;
   targetAudioData?: string;
+  selectedVoice?: string;
 }
 
 export function Results({
-  transcribedText,
-  translatedText,
+  historyId,
+  transcribedText: initialTranscribedText,
+  translatedText: initialTranslatedText,
   targetLanguage,
   initialLanguage = "Auto-detected",
   initialAudioData,
-  targetAudioData,
+  targetAudioData: initialTargetAudioData,
+  selectedVoice: initialVoice,
 }: ResultsProps) {
+  const [transcribedText, setTranscribedText] = useState(initialTranscribedText || '');
+  const [translatedText, setTranslatedText] = useState(initialTranslatedText || '');
+  const [isEditingTranscription, setIsEditingTranscription] = useState(false);
+  const [isEditingTranslation, setIsEditingTranslation] = useState(false);
+  const [targetAudioData, setTargetAudioData] = useState(initialTargetAudioData);
+  const [currentVoice, setCurrentVoice] = useState(initialVoice || 'nova');
+
+  const editTextMutation = useEditText();
+  const retranslateMutation = useRetranslate();
+  const remakeAudioMutation = useRemakeAudio();
+
+  // Update state when props change
+  useEffect(() => {
+    setTranscribedText(initialTranscribedText || '');
+    setTranslatedText(initialTranslatedText || '');
+    setTargetAudioData(initialTargetAudioData);
+    if (initialVoice) {
+      setCurrentVoice(initialVoice);
+    }
+  }, [initialTranscribedText, initialTranslatedText, initialTargetAudioData, initialVoice]);
+
+  const handleRetranslate = async () => {
+    if (!historyId) {
+      toast.error('Cannot retranslate: No history ID found');
+      return;
+    }
+
+    const toastId = toast.loading('Saving changes and retranslating...');
+    
+    try {
+      // First save the edited text
+      if (isEditingTranscription) {
+        await editTextMutation.mutateAsync({ historyId, type: 'source', text: transcribedText });
+      }
+
+      // Then retranslate
+      const result = await retranslateMutation.mutateAsync(historyId);
+      if (result && result.resultText) {
+        setTranslatedText(result.resultText);
+        setIsEditingTranscription(false); // Exit edit mode
+        toast.success('Text re-translated successfully', { id: toastId });
+      } else {
+        throw new Error('No translation received from server');
+      }
+    } catch (error) {
+      console.error('Retranslation error:', error);
+      toast.error(
+        `Failed to re-translate: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { id: toastId }
+      );
+    }
+  };
+
+  const handleRemakeAudio = async () => {
+    if (!historyId) {
+      toast.error('Cannot remake audio: No history ID found');
+      return;
+    }
+
+    const toastId = toast.loading('Saving changes and regenerating audio...');
+    
+    try {
+      // First save the edited text
+      if (isEditingTranslation) {
+        await editTextMutation.mutateAsync({ historyId, type: 'translated', text: translatedText });
+      }
+
+      // Then remake audio
+      const result = await remakeAudioMutation.mutateAsync({ 
+        historyId, 
+        voice: currentVoice 
+      });
+      
+      if (result && result.targetAudioData) {
+        setTargetAudioData(result.targetAudioData);
+        if (result.voice) {
+          setCurrentVoice(result.voice);
+        }
+        setIsEditingTranslation(false); // Exit edit mode
+        toast.success('Audio regenerated successfully', { id: toastId });
+      } else {
+        throw new Error('No audio data received from server');
+      }
+    } catch (error) {
+      console.error('Audio regeneration error:', error);
+      toast.error(
+        `Failed to regenerate audio: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { id: toastId }
+      );
+    }
+  };
+
   if (!transcribedText && !translatedText) return null;
 
   const copyToClipboard = (text: string, type: string) => {
@@ -171,6 +275,7 @@ export function Results({
                   controls
                   className="w-full"
                   src={`data:audio/mpeg;base64,${targetAudioData}`}
+                  key={targetAudioData}
                 >
                   Your browser does not support the audio element.
                 </audio>
@@ -212,51 +317,61 @@ export function Results({
             <div className="space-y-4">
               <Textarea
                 value={transcribedText}
-                onChange={() => {}}
+                onChange={(e) => setTranscribedText(e.target.value)}
                 className="min-h-[300px] resize-none border-0 bg-gray-50 focus-visible:ring-1"
+                disabled={!isEditingTranscription || editTextMutation.isPending}
               />
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    copyToClipboard(transcribedText, "Transcription")
-                  }
+                  onClick={() => setIsEditingTranscription(!isEditingTranscription)}
                   className="flex-1"
+                  disabled={editTextMutation.isPending}
                 >
                   <Pencil className="w-4 h-4 mr-2" />
-                  Edit
+                  {isEditingTranscription ? 'Cancel' : 'Edit'}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    copyToClipboard(transcribedText, "Transcription")
-                  }
-                  className="flex-1"
-                >
-                  <LanguagesIcon className="w-4 h-4 mr-2" />
-                  Re-translate
-                </Button>
-                <div className="flex gap-2 ">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    copyToClipboard(transcribedText, "Transcription")
-                  }
-                  className="flex-1"
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => downloadText(transcribedText, "Transcription")}
-                >
-                  <Download className="w-4 h-4" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRetranslate}
+                        className="flex-1"
+                        disabled={!isEditingTranscription || !historyId || retranslateMutation.isPending || editTextMutation.isPending}
+                      >
+                        <LanguagesIcon className="w-4 h-4 mr-2" />
+                        {retranslateMutation.isPending ? 'Processing...' : 'Save & Re-translate'}
+                      </Button>
+                    </TooltipTrigger>
+                    {!isEditingTranscription && (
+                      <TooltipContent>
+                        <p>Edit the content first to enable re-translation</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyToClipboard(transcribedText, "Transcription")}
+                    className="flex-1"
+                    disabled={editTextMutation.isPending}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => downloadText(transcribedText, "Transcription")}
+                    disabled={editTextMutation.isPending}
+                  >
+                    <Download className="w-4 h-4" />
+                  </Button>
                 </div>
               </div>
             </div>
@@ -289,52 +404,62 @@ export function Results({
             <div className="space-y-4">
               <Textarea
                 value={translatedText}
-                onChange={()=>{}}
+                onChange={(e) => setTranslatedText(e.target.value)}
                 className={`min-h-[300px] resize-none border-0 bg-gray-50 focus-visible:ring-1 ${targetLanguage.toLowerCase()}-text`}
+                disabled={!isEditingTranslation || editTextMutation.isPending}
               />
-              
               <div className="flex gap-2">
-              <Button
+                <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    copyToClipboard(transcribedText, "Transcription")
-                  }
+                  onClick={() => setIsEditingTranslation(!isEditingTranslation)}
                   className="flex-1"
+                  disabled={editTextMutation.isPending}
                 >
                   <Pencil className="w-4 h-4 mr-2" />
-                  Edit
+                  {isEditingTranslation ? 'Cancel' : 'Edit'}
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    copyToClipboard(transcribedText, "Transcription")
-                  }
-                  className="flex-1"
-                >
-                  <Volume2 className="w-4 h-4 mr-2" />
-                  Remake Audio
-                </Button>
-                <div className="flex items-center gap-2 ">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyToClipboard(translatedText, "Translation")}
-                  className="flex-1"
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => downloadText(translatedText, "Translation")}
-                >
-                  <Download className="w-4 h-4" />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleRemakeAudio}
+                        className="flex-1"
+                        disabled={!isEditingTranslation || !historyId || remakeAudioMutation.isPending || editTextMutation.isPending}
+                      >
+                        <Volume2 className="w-4 h-4 mr-2" />
+                        {remakeAudioMutation.isPending ? 'Processing...' : 'Save & Remake Audio'}
+                      </Button>
+                    </TooltipTrigger>
+                    {!isEditingTranslation && (
+                      <TooltipContent>
+                        <p>Edit the content first to enable audio regeneration</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyToClipboard(translatedText, "Translation")}
+                    className="flex-1"
+                    disabled={editTextMutation.isPending}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => downloadText(translatedText, "Translation")}
+                    disabled={editTextMutation.isPending}
+                  >
+                    <Download className="w-4 h-4" />
+                  </Button>
                 </div>
-               
               </div>
             </div>
           </CardContent>

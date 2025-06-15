@@ -52,7 +52,7 @@ export function TranslateTab() {
   const [currentStage, setCurrentStage] = useState("");
   const [audioData, setAudioData] = useState("");
   const [targetAudioData, setTargetAudioData] = useState("");
-
+  const [historyId, setHistoryId] = useState("");
   // Audio generation options (upcoming features)
   const [generateTargetAudio, setGenerateTargetAudio] = useState(false);
   const [keepOriginalAudio, setKeepOriginalAudio] = useState(true);
@@ -159,6 +159,18 @@ export function TranslateTab() {
 
     wsRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log('WebSocket message received:', {
+        type: data.type,
+        data: {
+          ...data.data,
+          transcriptionLength: data.data.transcription?.length,
+          translationLength: data.data.translation?.length || data.data.currentTranslation?.length,
+          progress: data.data.progress,
+          hasInitialAudio: !!data.data.initialAudioData,
+          hasTargetAudio: !!data.data.targetAudioData,
+          historyId: data.data.historyId
+        }
+      });
 
       switch (data.type) {
         case MessageTypes.PROCESSING_STARTED:
@@ -177,6 +189,10 @@ export function TranslateTab() {
             calculateOverallProgress("transcription", transcriptionProgress)
           );
           if (data.data.transcription) {
+            console.log('Setting transcribed text:', {
+              length: data.data.transcription.length,
+              preview: data.data.transcription.substring(0, 100) + '...'
+            });
             setTranscribedText(data.data.transcription);
           }
           break;
@@ -187,15 +203,27 @@ export function TranslateTab() {
             calculateOverallProgress("translation", translationProgress)
           );
           if (data.data.currentTranslation) {
+            console.log('Setting translation progress:', {
+              length: data.data.currentTranslation.length,
+              preview: data.data.currentTranslation.substring(0, 100) + '...'
+            });
             setTranslatedText(data.data.currentTranslation);
           }
           break;
         case MessageTypes.PROCESSING_COMPLETE:
-          setTranscribedText(data.data.transcription);
-          setTranslatedText(data.data.translation);
+          console.log('Processing complete:', {
+            transcriptionLength: data.data.transcription?.length,
+            translationLength: data.data.translation?.length,
+            hasInitialAudio: !!data.data.initialAudioData,
+            hasTargetAudio: !!data.data.targetAudioData,
+            historyId: data.data.historyId
+          });
+          setTranscribedText(data.data.transcription || '');
+          setTranslatedText(data.data.translation || '');
           setInitialLanguage(data.data.initialLanguage || "Auto-detected");
           setAudioData(data.data.initialAudioData || "");
           setTargetAudioData(data.data.targetAudioData || "");
+          setHistoryId(data.data.historyId || '');
           setIsProcessing(false);
           setProgress(100);
           setCurrentStage("Complete");
@@ -205,6 +233,7 @@ export function TranslateTab() {
           queryClient.invalidateQueries({ queryKey: userKeys.history() });
           break;
         case MessageTypes.ERROR:
+          console.error('WebSocket error:', data.data.error);
           toast.error(data.data.error);
           setIsProcessing(false);
           setProgress(0);
@@ -216,15 +245,27 @@ export function TranslateTab() {
           }
           break;
         default:
+          console.warn('Unknown message type:', data.type);
           break;
       }
     };
 
-    wsRef.current.onerror = () => {
+    wsRef.current.onerror = (error) => {
+      console.error('WebSocket error:', error);
       toast.error("WebSocket connection error");
       setIsProcessing(false);
       setProgress(0);
       setCurrentStage("");
+    };
+
+    wsRef.current.onclose = () => {
+      console.log('WebSocket connection closed');
+      if (isProcessing) {
+        toast.error("Connection lost. Please try again.");
+        setIsProcessing(false);
+        setProgress(0);
+        setCurrentStage("");
+      }
     };
   };
 
@@ -462,12 +503,14 @@ export function TranslateTab() {
 
           {/* Results Component */}
           <Results
-            transcribedText={'asd'}
+            historyId={historyId}
+            transcribedText={transcribedText}
             translatedText={translatedText}
             targetLanguage={targetLanguage}
             initialLanguage={initialLanguage}
             initialAudioData={audioData}
             targetAudioData={targetAudioData}
+            selectedVoice={selectedVoice}
           />
         </div>
       )}

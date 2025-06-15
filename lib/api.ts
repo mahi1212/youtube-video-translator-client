@@ -86,6 +86,15 @@ export interface UpdateApiKeyRequest {
   apiKey: string;
 }
 
+export interface EditTextRequest {
+  type: 'source' | 'translated';
+  text: string;
+}
+
+export interface RemakeAudioRequest {
+  voice?: string;
+}
+
 // API Services
 export const authService = {
   register: async (data: RegisterRequest): Promise<AuthResponse> => {
@@ -139,6 +148,43 @@ export const userService = {
       },
     });
     if (!response.ok) throw new Error('Failed to fetch audio data');
+    return response.json();
+  },
+
+  editText: async (historyId: string, data: EditTextRequest): Promise<UsageHistoryItem> => {
+    const response = await fetch(`${BASE_URL}/api/history/${historyId}/edit-text`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to edit text');
+    return response.json();
+  },
+
+  retranslate: async (historyId: string): Promise<UsageHistoryItem> => {
+    const response = await fetch(`${BASE_URL}/api/history/${historyId}/retranslate`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+      },
+    });
+    if (!response.ok) throw new Error('Failed to retranslate');
+    return response.json();
+  },
+
+  remakeAudio: async (historyId: string, data: RemakeAudioRequest): Promise<UsageHistoryItem> => {
+    const response = await fetch(`${BASE_URL}/api/history/${historyId}/remake-audio`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw new Error('Failed to remake audio');
     return response.json();
   },
 }; 
