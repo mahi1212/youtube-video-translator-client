@@ -141,7 +141,13 @@ export function TranslateTab() {
     }
 
     // Create new WebSocket connection
-    wsRef.current = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:5000");
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:5000';
+    // Convert ws:// to wss:// if we're on HTTPS
+    const secureWsUrl = typeof window !== 'undefined' && window.location.protocol === 'https:' 
+      ? wsUrl.replace('ws://', 'wss://') 
+      : wsUrl;
+    
+    wsRef.current = new WebSocket(secureWsUrl);
 
     wsRef.current.onopen = () => {
       if (wsRef.current) {
