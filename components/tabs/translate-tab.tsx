@@ -141,7 +141,7 @@ export function TranslateTab() {
     }
 
     // Create new WebSocket connection
-    wsRef.current = new WebSocket("ws://localhost:5000");
+    wsRef.current = new WebSocket(process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:5000");
 
     wsRef.current.onopen = () => {
       if (wsRef.current) {
