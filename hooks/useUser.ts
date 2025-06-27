@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { userService, type User, type UsageHistoryItem, type UpdateApiKeyRequest, type EditTextRequest, type RemakeAudioRequest } from '@/lib/api';
 import { toast } from 'sonner';
+import { useAuth } from '@/providers/auth-provider';
 
 // Query Keys
 export const userKeys = {
@@ -11,28 +12,34 @@ export const userKeys = {
 };
 
 export const useUserProfile = () => {
+  const { token, isClient } = useAuth();
+  
   return useQuery<User, Error>({
     queryKey: userKeys.profile(),
     queryFn: userService.getProfile,
-    enabled: !!localStorage.getItem('token'),
+    enabled: isClient && !!token,
     retry: false,
   });
 };
 
 export const useUserHistory = () => {
+  const { token, isClient } = useAuth();
+  
   return useQuery<UsageHistoryItem[], Error>({
     queryKey: userKeys.history(),
     queryFn: userService.getHistory,
-    enabled: !!localStorage.getItem('token'),
+    enabled: isClient && !!token,
     retry: false,
   });
 };
 
 export const useHistoryAudio = (historyId: string | null) => {
+  const { token, isClient } = useAuth();
+  
   return useQuery<{ initialAudioData: string | null; targetAudioData: string | null }, Error>({
     queryKey: userKeys.historyAudio(historyId || ''),
     queryFn: () => userService.getHistoryAudio(historyId!),
-    enabled: !!historyId && !!localStorage.getItem('token'),
+    enabled: isClient && !!historyId && !!token,
     retry: false,
   });
 };

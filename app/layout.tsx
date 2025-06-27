@@ -5,6 +5,7 @@ import "./globals.css"
 import { Toaster } from "sonner"
 import { AppLayout } from "@/components/youtube-translator/global/app-layout"
 import { QueryProvider } from "@/providers/query-provider"
+import { AuthProvider } from "@/providers/auth-provider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,11 +23,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <QueryProvider>
-          <AppLayout>
-            {children}
-          </AppLayout>
+          <AuthProvider>
+            <AppLayout>
+              {children}
+            </AppLayout>
+            <Toaster />
+          </AuthProvider>
         </QueryProvider>
-        <Toaster />
       </body>
     </html>
   )

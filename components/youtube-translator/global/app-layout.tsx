@@ -12,6 +12,7 @@ import { Menu, X } from "lucide-react";
 import { toast } from "sonner";
 import { useUserProfile, useUserHistory, userKeys } from "@/hooks/useUser";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/providers/auth-provider";
 import type { User, UsageHistoryItem } from "@/lib/api";
 import { Header } from "../header";
 
@@ -49,6 +50,7 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
+  const { setToken } = useAuth();
   const [openaiApiKey, setOpenaiApiKey] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -68,18 +70,22 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   // Load collapsed state from localStorage on mount
   useEffect(() => {
-    const savedCollapsedState = localStorage.getItem("sidebarCollapsed");
-    if (savedCollapsedState !== null) {
-      setIsSidebarCollapsed(JSON.parse(savedCollapsedState));
+    if (typeof window !== 'undefined') {
+      const savedCollapsedState = localStorage.getItem("sidebarCollapsed");
+      if (savedCollapsedState !== null) {
+        setIsSidebarCollapsed(JSON.parse(savedCollapsedState));
+      }
     }
   }, []);
 
   // Save collapsed state to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem(
-      "sidebarCollapsed",
-      JSON.stringify(isSidebarCollapsed)
-    );
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(
+        "sidebarCollapsed",
+        JSON.stringify(isSidebarCollapsed)
+      );
+    }
   }, [isSidebarCollapsed]);
 
   // Set API key when user data changes
@@ -106,7 +112,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, []);
 
   const handleAuthSuccess = (data: { token: string; user: User }) => {
-    localStorage.setItem("token", data.token);
+    setToken(data.token);
     if (data.user.apiKey) {
       setOpenaiApiKey(data.user.apiKey);
     }
@@ -116,7 +122,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    setToken(null);
     setOpenaiApiKey("");
     // Clear all user-related queries
     queryClient.removeQueries({ queryKey: userKeys.all });

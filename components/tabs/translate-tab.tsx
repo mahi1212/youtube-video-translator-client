@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useAppContext } from "@/components/youtube-translator/global/app-layout";
 import { useQueryClient } from "@tanstack/react-query";
 import { userKeys } from "@/hooks/useUser";
+import { useAuth } from "@/providers/auth-provider";
 
 // Message types from server
 const MessageTypes = {
@@ -39,6 +40,7 @@ export function TranslateTab() {
     setShowLoginModal,
     setShowPremiumModal,
   } = useAppContext();
+  const { token } = useAuth();
 
   const queryClient = useQueryClient();
 
@@ -147,7 +149,7 @@ export function TranslateTab() {
           JSON.stringify({
             videoUrl,
             targetLang: targetLanguage,
-            token: localStorage.getItem("token"),
+            token,
             openaiApiKey: openaiApiKey || null,
             shouldKeepOriginalAudio: keepOriginalAudio,
             shouldGenerateTargetAudio: generateTargetAudio,

@@ -10,12 +10,22 @@ export const apiClient = axios.create({
   },
 });
 
+let currentToken: string | null = null;
+
+export const setAuthToken = (token: string | null) => {
+  currentToken = token;
+  if (token) {
+    apiClient.defaults.headers.common.Authorization = `Bearer ${token}`;
+  } else {
+    delete apiClient.defaults.headers.common.Authorization;
+  }
+};
+
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (currentToken) {
+      config.headers.Authorization = `Bearer ${currentToken}`;
     }
     return config;
   },
@@ -31,8 +41,10 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.reload();
+      setAuthToken(null);
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     }
     return Promise.reject(error);
   }
@@ -112,7 +124,7 @@ export const userService = {
   getProfile: async (): Promise<User> => {
     const response = await fetch(`${BASE_URL}/profile`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${currentToken || ''}`,
       },
     });
     if (!response.ok) throw new Error('Failed to fetch profile');
@@ -123,7 +135,7 @@ export const userService = {
     const response = await fetch(`${BASE_URL}/update-api-key`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${currentToken || ''}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
@@ -134,7 +146,7 @@ export const userService = {
   getHistory: async (): Promise<UsageHistoryItem[]> => {
     const response = await fetch(`${BASE_URL}/history`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${currentToken || ''}`,
       },
     });
     if (!response.ok) throw new Error('Failed to fetch history');
@@ -144,7 +156,7 @@ export const userService = {
   getHistoryAudio: async (historyId: string): Promise<{ initialAudioData: string | null; targetAudioData: string | null }> => {
     const response = await fetch(`${BASE_URL}/history/${historyId}/audio`, {
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${currentToken || ''}`,
       },
     });
     if (!response.ok) throw new Error('Failed to fetch audio data');
@@ -155,7 +167,7 @@ export const userService = {
     const response = await fetch(`${BASE_URL}/history/${historyId}/edit-text`, {
       method: 'PUT',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${currentToken || ''}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
@@ -168,7 +180,7 @@ export const userService = {
     const response = await fetch(`${BASE_URL}/history/${historyId}/retranslate`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${currentToken || ''}`,
       },
     });
     if (!response.ok) throw new Error('Failed to retranslate');
@@ -179,7 +191,7 @@ export const userService = {
     const response = await fetch(`${BASE_URL}/history/${historyId}/remake-audio`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+        Authorization: `Bearer ${currentToken || ''}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data),
