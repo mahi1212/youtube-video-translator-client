@@ -54,10 +54,10 @@ export function TranslateTab() {
   const [targetAudioData, setTargetAudioData] = useState("");
   const [historyId, setHistoryId] = useState("");
   // Audio generation options (upcoming features)
-  const [generateTargetAudio, setGenerateTargetAudio] = useState(false);
+  const [generateTargetAudio, setGenerateTargetAudio] = useState(true);
   const [keepOriginalAudio, setKeepOriginalAudio] = useState(true);
   const [enableVoiceClone, setEnableVoiceClone] = useState(false);
-  const [selectedVoice, setSelectedVoice] = useState("alloy");
+  const [selectedVoice, setSelectedVoice] = useState("nova");
 
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -95,10 +95,10 @@ export function TranslateTab() {
     setTargetAudioData("");
 
     // Reset audio options
-    setGenerateTargetAudio(false);
+    setGenerateTargetAudio(true);
     setKeepOriginalAudio(true);
     setEnableVoiceClone(false);
-    setSelectedVoice("");
+    setSelectedVoice("nova");
 
     toast.success("Results cleared! Ready for new conversion.");
   };

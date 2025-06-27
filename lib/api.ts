@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 // Create axios instance
 export const apiClient = axios.create({
@@ -110,7 +110,7 @@ export const authService = {
 
 export const userService = {
   getProfile: async (): Promise<User> => {
-    const response = await fetch(`${BASE_URL}/api/profile`, {
+    const response = await fetch(`${BASE_URL}/profile`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
       },
@@ -120,7 +120,7 @@ export const userService = {
   },
 
   updateApiKey: async (data: UpdateApiKeyRequest): Promise<void> => {
-    const response = await fetch(`${BASE_URL}/api/update-api-key`, {
+    const response = await fetch(`${BASE_URL}/update-api-key`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
@@ -132,7 +132,7 @@ export const userService = {
   },
 
   getHistory: async (): Promise<UsageHistoryItem[]> => {
-    const response = await fetch(`${BASE_URL}/api/history`, {
+    const response = await fetch(`${BASE_URL}/history`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
       },
@@ -142,7 +142,7 @@ export const userService = {
   },
 
   getHistoryAudio: async (historyId: string): Promise<{ initialAudioData: string | null; targetAudioData: string | null }> => {
-    const response = await fetch(`${BASE_URL}/api/history/${historyId}/audio`, {
+    const response = await fetch(`${BASE_URL}/history/${historyId}/audio`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
       },
@@ -152,7 +152,7 @@ export const userService = {
   },
 
   editText: async (historyId: string, data: EditTextRequest): Promise<UsageHistoryItem> => {
-    const response = await fetch(`${BASE_URL}/api/history/${historyId}/edit-text`, {
+    const response = await fetch(`${BASE_URL}/history/${historyId}/edit-text`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
@@ -165,7 +165,7 @@ export const userService = {
   },
 
   retranslate: async (historyId: string): Promise<UsageHistoryItem> => {
-    const response = await fetch(`${BASE_URL}/api/history/${historyId}/retranslate`, {
+    const response = await fetch(`${BASE_URL}/history/${historyId}/retranslate`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
@@ -176,7 +176,7 @@ export const userService = {
   },
 
   remakeAudio: async (historyId: string, data: RemakeAudioRequest): Promise<UsageHistoryItem> => {
-    const response = await fetch(`${BASE_URL}/api/history/${historyId}/remake-audio`, {
+    const response = await fetch(`${BASE_URL}/history/${historyId}/remake-audio`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
